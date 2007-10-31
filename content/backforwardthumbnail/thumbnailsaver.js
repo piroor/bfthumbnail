@@ -1,4 +1,4 @@
-var ThumbnailSaverService = { 
+var BackForwardThumbnailService = { 
 
 	kTHUMBNAILS_DIR : 'thumbnails',
 	kTOOLTIPTEXT    : 'backforwardthumbnail-tooltiptext-backup',
@@ -21,10 +21,18 @@ var ThumbnailSaverService = {
 	{
 		return document.getElementById('back-button');
 	},
+	get rewindButton() 
+	{
+		return document.getElementById('rewind-button');
+	},
  
 	get forwardButton() 
 	{
 		return document.getElementById('forward-button');
+	},
+	get fastforwardButton() 
+	{
+		return document.getElementById('fastforward-button');
 	},
  
 	get tooltip() 
@@ -113,14 +121,14 @@ var ThumbnailSaverService = {
 			toolbox.__backforwardthumbnail__customizeDone = toolbox.customizeDone;
 			toolbox.customizeDone = function(aChanged) {
 				this.__backforwardthumbnail__customizeDone(aChanged);
-				ThumbnailSaverService.initButtons();
+				BackForwardThumbnailService.initButtons();
 			};
 		}
 		if ('BrowserToolboxCustomizeDone' in window) {
 			window.__backforwardthumbnail__BrowserToolboxCustomizeDone = window.BrowserToolboxCustomizeDone;
 			window.BrowserToolboxCustomizeDone = function(aChanged) {
 				window.__backforwardthumbnail__BrowserToolboxCustomizeDone.apply(window, arguments);
-				ThumbnailSaverService.initButtons();
+				BackForwardThumbnailService.initButtons();
 			};
 		}
 
@@ -151,7 +159,7 @@ var ThumbnailSaverService = {
 		aTab.__thumbnailsaver__parentTabBrowser = aTabBrowser;
 
 		var filter = Components.classes['@mozilla.org/appshell/component/browser-status-filter;1'].createInstance(Components.interfaces.nsIWebProgress);
-		var listener = new ThumbnailSaverProgressListener(aTab, aTabBrowser);
+		var listener = new BackForwardThumbnailProgressListener(aTab, aTabBrowser);
 		filter.addProgressListener(listener, Components.interfaces.nsIWebProgress.NOTIFY_ALL);
 		aTab.linkedBrowser.webProgress.addProgressListener(filter, Components.interfaces.nsIWebProgress.NOTIFY_ALL);
 		aTab.__thumbnailsaver__progressListener = listener;
@@ -160,21 +168,18 @@ var ThumbnailSaverService = {
  
 	initButtons : function() 
 	{
-		var countBox;
+		this.initButton(this.backButton);
+		this.initButton(this.forwardButton);
 
-		var backButton = this.backButton;
-		if (backButton && !backButton.hasAttribute(this.kTOOLTIPTEXT)) {
-			backButton.setAttribute(this.kTOOLTIPTEXT, backButton.getAttribute('tooltiptext'));
-			backButton.removeAttribute('tooltiptext');
-			backButton.setAttribute('tooltip', this.tooltip.id);
-		}
-
-		var forwardButton = this.forwardButton;
-		if (forwardButton && !forwardButton.hasAttribute(this.kTOOLTIPTEXT)) {
-			forwardButton.setAttribute(this.kTOOLTIPTEXT, forwardButton.getAttribute('tooltiptext'));
-			forwardButton.removeAttribute('tooltiptext');
-			forwardButton.setAttribute('tooltip', this.tooltip.id);
-		}
+		this.initButton(this.rewindButton);
+		this.initButton(this.fastforwardButton);
+	},
+	initButton : function(aButton)
+	{
+		if (!aButton || aButton.hasAttribute(this.kTOOLTIPTEXT)) return;
+		aButton.setAttribute(this.kTOOLTIPTEXT, aButton.getAttribute('tooltiptext'));
+		aButton.removeAttribute('tooltiptext');
+		aButton.setAttribute('tooltip', this.tooltip.id);
 	},
   
 	destroy : function() 
@@ -322,15 +327,45 @@ var ThumbnailSaverService = {
 		switch (aTarget.id)
 		{
 			case 'back-button':
-				var history = this.browser.sessionHistory;
-				if (!history) return false;
-				this.updateTooltipForHistoryEntry(history.getEntryAtIndex(history.index-1, false));
-				break;
-
 			case 'forward-button':
 				var history = this.browser.sessionHistory;
 				if (!history) return false;
-				this.updateTooltipForHistoryEntry(history.getEntryAtIndex(history.index+1, false));
+				this.updateTooltipForHistoryEntry(history.getEntryAtIndex(
+					aTarget.id == 'back-button' ? history.index - 1 : history.index + 1,
+					false
+				));
+				break;
+
+			case 'rewind-button':
+			case 'fastforward-button':
+				var history = this.browser.sessionHistory;
+				if (!history) return false;
+
+				var current = history.getEntryAtIndex(history.index, false);
+				var c_host  = current.URI && /\w+:\/\/([^\/:]+)(\/|$)/.test(current.URI.spec) ? RegExp.$1 : null ;
+
+				var check = (aTarget.id == 'rewind-button') ? function(aIndex) { return aIndex > -1 } : function(aIndex) { return aIndex < SH.count }
+				var step  = (aTarget.id == 'rewind-button') ? -1 : 1 ;
+				var start = (aTarget.id == 'rewind-button') ? history.index-1 : history.index+1 ;
+
+				var entry,
+					t_host;
+				for (var i = start; check(i); i += step)
+				{
+					entry  = history.getEntryAtIndex(i, false);
+					t_host  = current.URI && /\w+:\/\/([^\/:]+)(\/|$)/.test(current.URI.spec) ? RegExp.$1 : null ;
+					if ((c_host && !t_host) || (!c_host && t_host) || (c_host != t_host)) {
+						if (this.getPref('rewindforward.goToEndPointOfCurrentDomain')) {
+							if (i == start) {
+								c_host = t_host;
+								continue;
+							}
+							i -= step;
+						}
+						this.updateTooltipForHistoryEntry(entry);
+						return;
+					}
+				}
 				break;
 
 			default:
@@ -465,15 +500,15 @@ var ThumbnailSaverService = {
    
 }; 
 
-window.addEventListener('load', ThumbnailSaverService, false);
-window.addEventListener('unload', ThumbnailSaverService, false);
+window.addEventListener('load', BackForwardThumbnailService, false);
+window.addEventListener('unload', BackForwardThumbnailService, false);
  
-function ThumbnailSaverProgressListener(aTab, aTabBrowser) 
+function BackForwardThumbnailProgressListener(aTab, aTabBrowser) 
 {
 	this.mTab = aTab;
 	this.mTabBrowser = aTabBrowser;
 }
-ThumbnailSaverProgressListener.prototype = {
+BackForwardThumbnailProgressListener.prototype = {
 	mTab        : null,
 	mTabBrowser : null,
 	onProgressChange: function(aWebProgress, aRequest, aCurSelfProgress, aMaxSelfProgress, aCurTotalProgress, aMaxTotalProgress)
@@ -486,7 +521,7 @@ ThumbnailSaverProgressListener.prototype = {
 			aStateFlags & nsIWebProgressListener.STATE_STOP &&
 			aStateFlags & nsIWebProgressListener.STATE_IS_NETWORK
 			) {
-			ThumbnailSaverService.createThumbnail(this.mTab, this.mTabBrowser);
+			BackForwardThumbnailService.createThumbnail(this.mTab, this.mTabBrowser);
 		}
 	},
 	onLocationChange : function(aWebProgress, aRequest, aLocation)

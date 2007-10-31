@@ -14,7 +14,7 @@
 <popupset id="mainPopupSet">
 	<tooltip id="backforwardthumbnail-tooltip"
 		position="after_start"
-		onpopupshowing="return ThumbnailSaverService.fillInTooltip(document.tooltipNode);">
+		onpopupshowing="return BackForwardThumbnailService.fillInTooltip(document.tooltipNode);">
 <!--
 		noautohide="true"
 -->
