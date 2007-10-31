@@ -4,3 +4,5 @@ overlay	chrome://browser/content/browser.xul	chrome://backforwardthumbnail/conte
 
 locale	backforwardthumbnail	en-US	jar:chrome/backforwardthumbnail.jar!/locale/en-US/backforwardthumbnail/
 locale	backforwardthumbnail	ja	jar:chrome/backforwardthumbnail.jar!/locale/ja/backforwardthumbnail/
+
+skin	backforwardthumbnail	classic/1.0	jar:chrome/backforwardthumbnail.jar!/skin/classic/backforwardthumbnail/

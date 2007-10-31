@@ -1,0 +1,21 @@
+@namespace url("http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul");
+@namespace xhtml url("http://www.w3.org/1999/xhtml");
+
+#backforwardthumbnail-tooltip {
+	max-width: 250px;
+}
+
+#backforwardthumbnail-tooltip-label {
+	font-weight: bold;
+	padding-bottom: 0.3em;
+	border-bottom: 1px solid;
+	margin-bottom: 0.3em;
+}
+
+#backforwardthumbnail-tooltip-thumbnail-container {
+	-moz-box-pack: center;
+}
+
+#backforwardthumbnail-tooltip-thumbnail {
+	border: 1px solid gray;
+}

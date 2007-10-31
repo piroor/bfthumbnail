@@ -1,4 +1,5 @@
 <?xml version="1.0"?>
+<?xml-stylesheet href="chrome://backforwardthumbnail/skin/backforwardthumbnail.css"?>
 <overlay id="backforwardthumbnail-overlay"
          xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
          xmlns:html="http://www.w3.org/1999/xhtml">
@@ -9,5 +10,23 @@
 		<html:canvas style="background: white;" id="thumbnail-saver-canvas"/>
 	</data>
 </window>
+
+<popupset id="mainPopupSet">
+	<tooltip id="backforwardthumbnail-tooltip"
+		position="after_start"
+		onpopupshowing="return ThumbnailSaverService.fillInTooltip(document.tooltipNode);">
+<!--
+		noautohide="true"
+-->
+		<vbox flex="1">
+			<label id="backforwardthumbnail-tooltip-label" crop="end"/>
+			<hbox id="backforwardthumbnail-tooltip-thumbnail-container">
+				<image id="backforwardthumbnail-tooltip-thumbnail"/>
+			</hbox>
+			<label id="backforwardthumbnail-tooltip-title" crop="end"/>
+			<label id="backforwardthumbnail-tooltip-uri" crop="end"/>
+		</vbox>
+	</tooltip>
+</popupset>
 
 </overlay>

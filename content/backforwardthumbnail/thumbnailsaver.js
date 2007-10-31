@@ -1,15 +1,104 @@
 var ThumbnailSaverService = { 
 
-	thumbnailBG : 'rgba(0,0,0,0.5)',
+	kTHUMBNAILS_DIR : 'thumbnails',
+	kTOOLTIPTEXT    : 'backforwardthumbnail-tooltiptext-backup',
+
+	thumbnailBG : 'rgb(128,128,128)',
 	 
-/* Utilities */ 
+/* references */ 
 	 
+	get canvas() 
+	{
+		return document.getElementById('thumbnail-saver-canvas');
+	},
+ 
 	get browser() 
 	{
 		return gBrowser;
 	},
  
-	ObserverService : Components.classes['@mozilla.org/observer-service;1'].getService(Components.interfaces.nsIObserverService), 
+	get backButton() 
+	{
+		return document.getElementById('back-button');
+	},
+ 
+	get forwardButton() 
+	{
+		return document.getElementById('forward-button');
+	},
+ 
+	get tooltip() 
+	{
+		return document.getElementById('backforwardthumbnail-tooltip');
+	},
+	get tooltipLabel()
+	{
+		return document.getElementById('backforwardthumbnail-tooltip-label');
+	},
+	get tooltipThumbnail()
+	{
+		return document.getElementById('backforwardthumbnail-tooltip-thumbnail');
+	},
+	get tooltipTitle()
+	{
+		return document.getElementById('backforwardthumbnail-tooltip-title');
+	},
+	get tooltipURI()
+	{
+		return document.getElementById('backforwardthumbnail-tooltip-uri');
+	},
+ 
+	get thumbnailsDir() 
+	{
+		if (!this._thumbnailsDir) {
+			const DirectoryService = Components.classes['@mozilla.org/file/directory_service;1'].getService(Components.interfaces.nsIProperties);
+			this._thumbnailsDir = DirectoryService.get('ProfD', Components.interfaces.nsIFile);
+			this._thumbnailsDir.append(this.kTHUMBNAILS_DIR);
+		}
+		if (!this._thumbnailsDir.exists())
+			this._thumbnailsDir.create(this._thumbnailsDir.DIRECTORY_TYPE, 0755);
+		return this._thumbnailsDir;
+	},
+	_thumbnailsDir : null,
+ 
+	get IOService() 
+	{
+		if (!this._IOService) {
+			this._IOService = IOService = Components.classes['@mozilla.org/network/io-service;1'].getService(Components.interfaces.nsIIOService);
+		}
+		return this._IOService;
+	},
+	_IOService : null,
+  
+/* Utilities */ 
+	 
+	getHashFromString : function(aString) 
+	{
+		var hasher = Components.classes['@mozilla.org/security/hash;1'].createInstance(Components.interfaces.nsICryptoHash);
+		hasher.init(hasher.MD5)
+
+		var array = aString.split('').map(function(aChar) {
+						return aChar.charCodeAt(0);
+					});
+		hasher.update(array, array.length);
+		var hash = hasher.finish(false);
+
+		var hexchars = '0123456789ABCDEF';
+		var hexrep = new Array(hash.length * 2);
+		hash.split('').forEach(function(aChar, aIndex) {
+			hexrep[aIndex * 2] = hexchars.charAt((aChar.charCodeAt(0) >> 4) & 15);
+			hexrep[aIndex * 2 + 1] = hexchars.charAt(aChar.charCodeAt(0) & 15);
+		});
+		return hexrep.join('');
+	},
+ 
+	getThumbnailForURI : function(aURI) 
+	{
+		var file = Components.classes['@mozilla.org/file/local;1'].createInstance(Components.interfaces.nsILocalFile);
+		file.initWithPath(this.thumbnailsDir.path);
+		file.append(this.getHashFromString(aURI));
+		return file;
+	},
   
 /* Initializing */ 
 	 
@@ -19,7 +108,24 @@ var ThumbnailSaverService = {
 
 		window.removeEventListener('load', this, false);
 
+		var toolbox = document.getElementById('navigator-toolbox');
+		if (toolbox.customizeDone) {
+			toolbox.__backforwardthumbnail__customizeDone = toolbox.customizeDone;
+			toolbox.customizeDone = function(aChanged) {
+				this.__backforwardthumbnail__customizeDone(aChanged);
+				ThumbnailSaverService.initButtons();
+			};
+		}
+		if ('BrowserToolboxCustomizeDone' in window) {
+			window.__backforwardthumbnail__BrowserToolboxCustomizeDone = window.BrowserToolboxCustomizeDone;
+			window.BrowserToolboxCustomizeDone = function(aChanged) {
+				window.__backforwardthumbnail__BrowserToolboxCustomizeDone.apply(window, arguments);
+				ThumbnailSaverService.initButtons();
+			};
+		}
+
 		this.initTabBrowser(gBrowser);
+		this.initButtons();
 
 		this.initialized = true;
 	},
@@ -50,6 +156,25 @@ var ThumbnailSaverService = {
 		aTab.linkedBrowser.webProgress.addProgressListener(filter, Components.interfaces.nsIWebProgress.NOTIFY_ALL);
 		aTab.__thumbnailsaver__progressListener = listener;
 		aTab.__thumbnailsaver__progressFilter   = filter;
+	},
+ 
+	initButtons : function() 
+	{
+		var countBox;
+
+		var backButton = this.backButton;
+		if (backButton && !backButton.hasAttribute(this.kTOOLTIPTEXT)) {
+			backButton.setAttribute(this.kTOOLTIPTEXT, backButton.getAttribute('tooltiptext'));
+			backButton.removeAttribute('tooltiptext');
+			backButton.setAttribute('tooltip', this.tooltip.id);
+		}
+
+		var forwardButton = this.forwardButton;
+		if (forwardButton && !forwardButton.hasAttribute(this.kTOOLTIPTEXT)) {
+			forwardButton.setAttribute(this.kTOOLTIPTEXT, forwardButton.getAttribute('tooltiptext'));
+			forwardButton.removeAttribute('tooltiptext');
+			forwardButton.setAttribute('tooltip', this.tooltip.id);
+		}
 	},
   
 	destroy : function() 
@@ -104,7 +229,7 @@ var ThumbnailSaverService = {
 		var h   = win.innerHeight;
 		var aspectRatio = 1 / 0.75;
 
-		var size = 100;
+		var size = this.getPref('extensions.backforwardthumbnail.size');
 		var canvasW = Math.floor((aspectRatio < 1) ? (size * aspectRatio) : size );
 		var canvasH = Math.floor((aspectRatio > 1) ? (size / aspectRatio) : size );
 
@@ -176,49 +301,50 @@ var ThumbnailSaverService = {
 		}
 
 		if (rendered) {
-			var hash = aThis.getHashFromString(aImage ? aImage.src : win.location.href );
+			var file = this.getThumbnailForURI(aImage ? aImage.src : win.location.href );
 			var data = canvas.toDataURL();
-
-			var DirectoryService = Components.classes['@mozilla.org/file/directory_service;1'].getService(Components.interfaces.nsIProperties);
-
-			var file = DirectoryService.get('ProfD', Components.interfaces.nsIFile);
-			file.append('thumbnails');
-			if (!file.exists())
-				file.create(file.DIRECTORY_TYPE, 0755);
-			file.append(hash+'.png');
 			if (file.exists())
 				file.remove(true);
 
 			var Persist = Components.classes['@mozilla.org/embedding/browser/nsWebBrowserPersist;1'].createInstance(Components.interfaces.nsIWebBrowserPersist);
-			const IOService = Components.classes['@mozilla.org/network/io-service;1'].getService(Components.interfaces.nsIIOService);
-			data = IOService.newURI(data, null, null);
+			data = this.IOService.newURI(data, null, null);
 			Persist.saveURI(data, null, null, null, null, file);
 		}
 	},
-	get canvas()
+ 
+	fillInTooltip : function(aTarget) 
 	{
-		return document.getElementById('thumbnail-saver-canvas');
+		if (!aTarget || aTarget.getAttribute('disabled') == 'true')
+			return false;
+
+		this.tooltipLabel.value = aTarget.getAttribute(this.kTOOLTIPTEXT);
+
+		switch (aTarget.id)
+		{
+			case 'back-button':
+				var history = this.browser.sessionHistory;
+				if (!history) return false;
+				this.updateTooltipForHistoryEntry(history.getEntryAtIndex(history.index-1, false));
+				break;
+
+			case 'forward-button':
+				var history = this.browser.sessionHistory;
+				if (!history) return false;
+				this.updateTooltipForHistoryEntry(history.getEntryAtIndex(history.index+1, false));
+				break;
+
+			default:
+				return false;
+		}
 	},
-	getHashFromString : function(aString)
+	updateTooltipForHistoryEntry : function(aEntry)
 	{
-		var hasher = Components.classes['@mozilla.org/security/hash;1'].createInstance(Components.interfaces.nsICryptoHash);
-		hasher.init(hasher.MD5)
-
-		var array = aString.split('').map(function(aChar) {
-						return aChar.charCodeAt(0);
-					});
-		hasher.update(array, array.length);
-		var hash = hasher.finish(false);
-
-		var hexchars = '0123456789ABCDEF';
-		var hexrep = new Array(hash.length * 2);
-		hash.split('').forEach(function(aChar, aIndex) {
-			hexrep[aIndex * 2] = hexchars.charAt((aChar.charCodeAt(0) >> 4) & 15);
-			hexrep[aIndex * 2 + 1] = hexchars.charAt(aChar.charCodeAt(0) & 15);
-		});
-		return hexrep.join('');
+		aEntry = aEntry.QueryInterface(Components.interfaces.nsIHistoryEntry);
+		this.tooltipTitle.value = aEntry.title;
+		this.tooltipURI.value = aEntry.URI.spec;
+		this.tooltipThumbnail.src = this.IOService.newFileURI(this.getThumbnailForURI(aEntry.URI.spec)).spec;
 	},
-  
+ 	 
 /* Event Handling */ 
 	 
 	handleEvent : function(aEvent) 
@@ -381,4 +507,4 @@ ThumbnailSaverProgressListener.prototype = {
 		throw Components.results.NS_NOINTERFACE;
 	}
 };
- 	
+ 
