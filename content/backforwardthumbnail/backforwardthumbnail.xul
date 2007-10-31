@@ -4,7 +4,7 @@
          xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
          xmlns:html="http://www.w3.org/1999/xhtml">
 
-<script src="thumbnailsaver.js" type="application/x-javascript"/>
+<script src="backforwardthumbnail.js" type="application/x-javascript"/>
 <window id="main-window">
 	<data collapsed="true">
 		<html:canvas style="background: white;" id="thumbnail-saver-canvas"/>
