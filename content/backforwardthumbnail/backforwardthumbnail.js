@@ -81,7 +81,7 @@ var BackForwardThumbnailService = {
 	_IOService : null,
   
 /* Utilities */ 
-	
+	 
 	getHashFromString : function(aString) 
 	{
 		var hasher = Components.classes['@mozilla.org/security/hash;1'].createInstance(Components.interfaces.nsICryptoHash);
@@ -109,7 +109,37 @@ var BackForwardThumbnailService = {
 		file.append(this.getHashFromString(aURI));
 		return file;
 	},
-  
+ 
+	updateCache : function() 
+	{
+		var files = this.thumbnailsDir.directoryEntries;
+		var file;
+		var filesArray = [];
+		var total = 0;
+		while (files.hasMoreElements())
+		{
+			file = files.getNext().QueryInterface(Components.interfaces.nsIFile);
+			total += file.fileSize;
+			filesArray.push({
+				file : file,
+				size : file.fileSize,
+				date : file.lastModifiedTime
+			});
+		}
+
+		var max = this.getPref('extensions.backforwardthumbnail.maxCache') * 1024;
+		if (total < max) return;
+
+		filesArray.sort(function(aA, aB) { return aA.date - aB.date });
+
+		while (total < max)
+		{
+			file = filesArray.unshift();
+			total -= file.size;
+			file.file.remove(true);
+		}
+	},
+ 	 
 /* Initializing */ 
 	
 	init : function() 
@@ -422,7 +452,7 @@ var BackForwardThumbnailService = {
 		this.tooltip.showPopup(aNode, -1, -1, 'tooltip', 'bottomleft', 'topleft');
 		this.delayedHide(aNode, this.getPref('extensions.backforwardthumbnail.autoHideDelay'));
 	},
- 	
+ 
 	hide : function(aNode) 
 	{
 		this.tooltip.hidePopup();
