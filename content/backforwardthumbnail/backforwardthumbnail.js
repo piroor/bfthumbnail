@@ -21,7 +21,7 @@ var BackForwardThumbnailService = {
 	{
 		return document.getElementById('back-button');
 	},
-	get rewindButton() 
+	get rewindButton()
 	{
 		return document.getElementById('rewind-button');
 	},
@@ -30,7 +30,7 @@ var BackForwardThumbnailService = {
 	{
 		return document.getElementById('forward-button');
 	},
-	get fastforwardButton() 
+	get fastforwardButton()
 	{
 		return document.getElementById('fastforward-button');
 	},
@@ -79,7 +79,7 @@ var BackForwardThumbnailService = {
 	_IOService : null,
   
 /* Utilities */ 
-	 
+	
 	getHashFromString : function(aString) 
 	{
 		var hasher = Components.classes['@mozilla.org/security/hash;1'].createInstance(Components.interfaces.nsICryptoHash);
@@ -109,12 +109,22 @@ var BackForwardThumbnailService = {
 	},
   
 /* Initializing */ 
-	 
+	
 	init : function() 
 	{
 		if (!('gBrowser' in window)) return;
 
 		window.removeEventListener('load', this, false);
+
+
+		if ('BrowserCustomizeToolbar' in window) {
+			eval('window.BrowserCustomizeToolbar = '+
+				window.BrowserCustomizeToolbar.toSource().replace(
+					'{',
+					'{ BackForwardThumbnailService.destroyButtons(); '
+				)
+			);
+		}
 
 		var toolbox = document.getElementById('navigator-toolbox');
 		if (toolbox.customizeDone) {
@@ -176,15 +186,21 @@ var BackForwardThumbnailService = {
 	},
 	initButton : function(aButton)
 	{
-		if (!aButton || aButton.hasAttribute(this.kTOOLTIPTEXT)) return;
-		aButton.setAttribute(this.kTOOLTIPTEXT, aButton.getAttribute('tooltiptext'));
-		aButton.removeAttribute('tooltiptext');
-		aButton.setAttribute('tooltip', this.tooltip.id);
+		if (!aButton) return;
+
+		if (!aButton.hasAttribute(this.kTOOLTIPTEXT)) {
+			aButton.setAttribute(this.kTOOLTIPTEXT, aButton.getAttribute('tooltiptext'));
+			aButton.removeAttribute('tooltiptext');
+		}
+
+		aButton.addEventListener('mouseover', this, false);
+		aButton.addEventListener('mouseout', this, false);
 	},
   
 	destroy : function() 
 	{
 		this.destroyTabBrowser(gBrowser);
+		this.destroyButtons();
 
 		window.removeEventListener('unload', this, false);
 
@@ -218,6 +234,22 @@ var BackForwardThumbnailService = {
 		catch(e) {
 			dump(e+'\n');
 		}
+	},
+ 
+	destroyButtons : function() 
+	{
+		this.destroyButtons(this.backButton);
+		this.destroyButtons(this.forwardButton);
+
+		this.destroyButtons(this.rewindButton);
+		this.destroyButtons(this.fastforwardButton);
+	},
+	destroyButtons : function(aButton)
+	{
+		if (!aButton) return;
+
+		aButton.removeEventListener('mouseover', this, false);
+		aButton.removeEventListener('mouseout', this, false);
 	},
    
 /* thumbnail */ 
@@ -379,7 +411,32 @@ var BackForwardThumbnailService = {
 		this.tooltipURI.value = aEntry.URI.spec;
 		this.tooltipThumbnail.src = this.IOService.newFileURI(this.getThumbnailForURI(aEntry.URI.spec)).spec;
 	},
- 	 
+ 
+	show : function(aNode) 
+	{
+		document.tooltipNode = aNode;
+		this.tooltip.showPopup(aNode, -1, -1, 'tooltip', 'bottomleft', 'topleft');
+	},
+ 	
+	hide : function(aNode) 
+	{
+		this.tooltip.hidePopup();
+	},
+	delayedHide : function(aNode)
+	{
+		this.cancelDelayedHide();
+		this.delayedHideTimer = window.setTimeout(function(aSelf, aTarget) {
+			aSelf.hide(aTarget);
+		}, 0, this, aNode);
+	},
+	cancelDelayedHide : function()
+	{
+		if (this.delayedHideTimer) {
+			window.clearTimeout(this.delayedHideTimer);
+			this.delayedHideTimer = null;
+		}
+	},
+  
 /* Event Handling */ 
 	 
 	handleEvent : function(aEvent) 
@@ -400,6 +457,17 @@ var BackForwardThumbnailService = {
 
 			case 'TabClose':
 				this.destroyTab(aEvent.originalTarget, aEvent.currentTarget);
+				break;
+
+			case 'mouseover':
+				if (aEvent.target.getAttribute('disabled') == 'true') return;
+				this.cancelDelayedHide();
+				this.show(aEvent.target);
+				break;
+
+			case 'mouseout':
+				if (aEvent.target.getAttribute('disabled') == 'true') return;
+				this.delayedHide(aEvent.target);
 				break;
 		}
 	},

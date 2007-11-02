@@ -20,10 +20,10 @@
 -->
 		<vbox flex="1">
 			<label id="backforwardthumbnail-tooltip-label" crop="end"/>
+			<label id="backforwardthumbnail-tooltip-title" crop="end"/>
 			<hbox id="backforwardthumbnail-tooltip-thumbnail-container">
 				<image id="backforwardthumbnail-tooltip-thumbnail"/>
 			</hbox>
-			<label id="backforwardthumbnail-tooltip-title" crop="end"/>
 			<label id="backforwardthumbnail-tooltip-uri" crop="end"/>
 		</vbox>
 	</tooltip>
