@@ -4,6 +4,8 @@ var BackForwardThumbnailService = {
 	kTOOLTIPTEXT    : 'backforwardthumbnail-tooltiptext-backup',
 
 	thumbnailBG : 'rgb(128,128,128)',
+
+	shown : false,
 	 
 /* references */ 
 	 
@@ -403,6 +405,8 @@ var BackForwardThumbnailService = {
 			default:
 				return false;
 		}
+
+		return true;
 	},
 	updateTooltipForHistoryEntry : function(aEntry)
 	{
@@ -416,18 +420,19 @@ var BackForwardThumbnailService = {
 	{
 		document.tooltipNode = aNode;
 		this.tooltip.showPopup(aNode, -1, -1, 'tooltip', 'bottomleft', 'topleft');
+		this.delayedHide(aNode, this.getPref('extensions.backforwardthumbnail.autoHideDelay'));
 	},
  	
 	hide : function(aNode) 
 	{
 		this.tooltip.hidePopup();
 	},
-	delayedHide : function(aNode)
+	delayedHide : function(aNode, aDelay)
 	{
 		this.cancelDelayedHide();
 		this.delayedHideTimer = window.setTimeout(function(aSelf, aTarget) {
 			aSelf.hide(aTarget);
-		}, 0, this, aNode);
+		}, aDelay || 0, this, aNode);
 	},
 	cancelDelayedHide : function()
 	{
@@ -590,6 +595,14 @@ BackForwardThumbnailProgressListener.prototype = {
 			aStateFlags & nsIWebProgressListener.STATE_IS_NETWORK
 			) {
 			BackForwardThumbnailService.createThumbnail(this.mTab, this.mTabBrowser);
+			if (BackForwardThumbnailService.shown &&
+				this.mTabBrowser == gBrowser &&
+				this.mTab.getAttribute('selected') == 'true') {
+				var target = document.tooltipNode;
+				BackForwardThumbnailService.hide(target);
+				if (target && target.getAttribute('disabled') != 'true')
+					BackForwardThumbnailService.show(target);
+			}
 		}
 	},
 	onLocationChange : function(aWebProgress, aRequest, aLocation)
