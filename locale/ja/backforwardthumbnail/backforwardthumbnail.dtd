@@ -1,3 +1,9 @@
 <!ENTITY config.title        "戻る/進むのサムネイルの設定">
 
-<!ENTITY config.tabs. "">
+<!ENTITY config.tabs.general "全般">
+
+<!ENTITY config.size-before "サムネイルの表示サイズ:">
+<!ENTITY config.size-after  "ピクセル">
+
+<!ENTITY config.expire.days-before "">
+<!ENTITY config.expire.days-after  "日以上前に訪問したページのサムネイルは自動的に削除（-1で削除しない）">

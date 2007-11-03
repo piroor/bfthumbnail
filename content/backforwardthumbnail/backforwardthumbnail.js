@@ -412,8 +412,7 @@ var BackForwardThumbnailService = {
  
 	saveThumbnail : function(aURI, aThumbnailURI) 
 	{
-		var db = this.thumbnails;
-		var statement = db.createStatement('INSERT OR REPLACE INTO '+this.kTABLE+' VALUES(?1, ?2, ?3)');
+		var statement = this.thumbnails.createStatement('INSERT OR REPLACE INTO '+this.kTABLE+' VALUES(?1, ?2, ?3)');
 		statement.bindStringParameter(0, aURI);
 		statement.bindStringParameter(1, aThumbnailURI);
 		statement.bindDoubleParameter(2, Date.now());
@@ -428,8 +427,7 @@ var BackForwardThumbnailService = {
  
 	loadThumbnail : function(aURI) 
 	{
-		var db = this.thumbnails;
-		var statement = db.createStatement('SELECT * FROM '+this.kTABLE+' WHERE '+this.kKEY+' = ?1');
+		var statement = this.thumbnails.createStatement('SELECT * FROM '+this.kTABLE+' WHERE '+this.kKEY+' = ?1');
 		statement.bindStringParameter(0, aURI);
 		statement.executeStep();
 		try {
@@ -442,9 +440,11 @@ var BackForwardThumbnailService = {
  
 	updateDB : function()
 	{
-		var db = this.thumbnails;
-		var statement = db.createStatement('DELETE FROM '+this.kTABLE+' WHERE '+this.kDATE+' < ?1');
-		statement.bindDoubleParameter(0, Date.now() - (1000 * 60 * 60 * 24 * this.getPref('extensions.backforwardthumbnail.expire.days')));
+		var statement = this.thumbnails.createStatement('DELETE FROM '+this.kTABLE+' WHERE '+this.kDATE+' < ?1');
+		var days = this.getPref('extensions.backforwardthumbnail.expire.days');
+		if (days < 0) return;
+
+		statement.bindDoubleParameter(0, Date.now() - (1000 * 60 * 60 * 24 * days));
 		try {
 			statement.executeStep();
 		}

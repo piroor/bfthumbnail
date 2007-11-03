@@ -9,16 +9,44 @@
 	title="&config.title;"
 	onload="sizeToContent();">
 
-<prefpane id="prefpane-thumbnail" label="&config.tabs.thumbnail;">
+<prefpane id="prefpane-general" label="&config.tabs.general;">
 	<preferences>
-		<preference id="extensions.backforwardthumbnail.thumbnail.enabled"
-			name="extensions.backforwardthumbnail.thumbnail.enabled"
-			type="bool"/>
+		<preference id="extensions.backforwardthumbnail.size"
+			name="extensions.backforwardthumbnail.size"
+			type="int"/>
+		<preference id="extensions.backforwardthumbnail.expire.days"
+			name="extensions.backforwardthumbnail.expire.days"
+			type="int"/>
 	</preferences>
 
+<!--
 	<checkbox id="extensions.backforwardthumbnail.thumbnail.enabled-check"
 		preference="extensions.backforwardthumbnail.thumbnail.enabled"
 		label="&config.thumbnail.enabled;"/>
+-->
+
+	<hbox align="center">
+		<label value="&config.size-before;"
+			control="extensions.backforwardthumbnail.size-textbox"/>
+		<textbox id="extensions.backforwardthumbnail.size-textbox"
+			preference="extensions.backforwardthumbnail.size"
+			type="number"
+			min="0" increment="1" style="width:4em;"/>
+		<label value="&config.size-after;"
+			control="extensions.backforwardthumbnail.size-textbox"/>
+	</hbox>
+
+	<hbox align="center">
+		<label value="&config.expire.days-before;"
+			control="extensions.backforwardthumbnail.expire.days-textbox"/>
+		<textbox id="extensions.backforwardthumbnail.expire.days-textbox"
+			preference="extensions.backforwardthumbnail.expire.days"
+			type="number"
+			min="0" increment="1" style="width:4em;"/>
+		<label value="&config.expire.days-after;"
+			control="extensions.backforwardthumbnail.expire.days-textbox"/>
+	</hbox>
+
 </prefpane>
 
 </prefwindow>

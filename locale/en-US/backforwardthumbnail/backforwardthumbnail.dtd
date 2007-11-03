@@ -1,3 +1,9 @@
 <!ENTITY config.title        "Configuration of Back &amp; Forward Thumbnail">
 
-<!ENTITY config.tabs. "">
+<!ENTITY config.tabs.general "General">
+
+<!ENTITY config.size-before "Thumbnail size:">
+<!ENTITY config.size-after  "pixel">
+
+<!ENTITY config.expire.days-before "Delete thumbnail for pages">
+<!ENTITY config.expire.days-after  "days ago (-1=don't delete)">
