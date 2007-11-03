@@ -1,0 +1,7 @@
+@namespace url("http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul");
+
+#bfthumbnail-tooltip-title[value=""],
+#bfthumbnail-tooltip-uri[value=""],
+#bfthumbnail-tooltip-thumbnail[src=""] {
+	visibility: collapse;
+}

@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="bfthumbnail.css"?>
+<?xml-stylesheet href="chrome://bfthumbnail/skin/bfthumbnail.css"?>
+<overlay id="bfthumbnail-overlay"
+         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+         xmlns:html="http://www.w3.org/1999/xhtml">
+
+<script src="bfthumbnail.js" type="application/x-javascript"/>
+<window id="main-window">
+	<data collapsed="true">
+		<html:canvas style="background: white;" id="thumbnail-saver-canvas"/>
+	</data>
+</window>
+
+<popupset id="mainPopupSet">
+	<tooltip id="bfthumbnail-tooltip"
+		position="after_start"
+		onpopupshowing="return (BFThumbnailService.fillInTooltip(document.tooltipNode) ? (BFThumbnailService.shown = true) : false );"
+		onpopuphiding="BFThumbnailService.shown = false;">
+<!--
+		noautohide="true"
+-->
+		<vbox flex="1">
+			<label id="bfthumbnail-tooltip-label" crop="end"/>
+			<label id="bfthumbnail-tooltip-title" crop="end"/>
+			<hbox id="bfthumbnail-tooltip-thumbnail-container">
+				<image id="bfthumbnail-tooltip-thumbnail"/>
+			</hbox>
+			<label id="bfthumbnail-tooltip-uri" crop="end"/>
+		</vbox>
+	</tooltip>
+</popupset>
+
+</overlay>

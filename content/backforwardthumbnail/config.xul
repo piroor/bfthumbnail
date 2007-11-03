@@ -1,50 +1,50 @@
 <?xml version="1.0"?>
 <?xml-stylesheet href="chrome://global/skin/"?>
 <!DOCTYPE prefwindow [
-<!ENTITY % mainDTD SYSTEM "chrome://backforwardthumbnail/locale/backforwardthumbnail.dtd">
+<!ENTITY % mainDTD SYSTEM "chrome://bfthumbnail/locale/bfthumbnail.dtd">
 %mainDTD;
 ]>
-<prefwindow id="backforwardthumbnail-config"
+<prefwindow id="bfthumbnail-config"
 	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
 	title="&config.title;"
 	onload="sizeToContent();">
 
 <prefpane id="prefpane-general" label="&config.tabs.general;">
 	<preferences>
-		<preference id="extensions.backforwardthumbnail.size"
-			name="extensions.backforwardthumbnail.size"
+		<preference id="extensions.bfthumbnail.size"
+			name="extensions.bfthumbnail.size"
 			type="int"/>
-		<preference id="extensions.backforwardthumbnail.expire.days"
-			name="extensions.backforwardthumbnail.expire.days"
+		<preference id="extensions.bfthumbnail.expire.days"
+			name="extensions.bfthumbnail.expire.days"
 			type="int"/>
 	</preferences>
 
 <!--
-	<checkbox id="extensions.backforwardthumbnail.thumbnail.enabled-check"
-		preference="extensions.backforwardthumbnail.thumbnail.enabled"
+	<checkbox id="extensions.bfthumbnail.thumbnail.enabled-check"
+		preference="extensions.bfthumbnail.thumbnail.enabled"
 		label="&config.thumbnail.enabled;"/>
 -->
 
 	<hbox align="center">
 		<label value="&config.size-before;"
-			control="extensions.backforwardthumbnail.size-textbox"/>
-		<textbox id="extensions.backforwardthumbnail.size-textbox"
-			preference="extensions.backforwardthumbnail.size"
+			control="extensions.bfthumbnail.size-textbox"/>
+		<textbox id="extensions.bfthumbnail.size-textbox"
+			preference="extensions.bfthumbnail.size"
 			type="number"
 			min="0" increment="1" style="width:4em;"/>
 		<label value="&config.size-after;"
-			control="extensions.backforwardthumbnail.size-textbox"/>
+			control="extensions.bfthumbnail.size-textbox"/>
 	</hbox>
 
 	<hbox align="center">
 		<label value="&config.expire.days-before;"
-			control="extensions.backforwardthumbnail.expire.days-textbox"/>
-		<textbox id="extensions.backforwardthumbnail.expire.days-textbox"
-			preference="extensions.backforwardthumbnail.expire.days"
+			control="extensions.bfthumbnail.expire.days-textbox"/>
+		<textbox id="extensions.bfthumbnail.expire.days-textbox"
+			preference="extensions.bfthumbnail.expire.days"
 			type="number"
 			min="0" increment="1" style="width:4em;"/>
 		<label value="&config.expire.days-after;"
-			control="extensions.backforwardthumbnail.expire.days-textbox"/>
+			control="extensions.bfthumbnail.expire.days-textbox"/>
 	</hbox>
 
 </prefpane>

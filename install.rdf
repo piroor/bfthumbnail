@@ -3,13 +3,13 @@
          xmlns:NC="http://home.netscape.com/NC-rdf#"
          xmlns:RDF="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
   <RDF:Description RDF:about="urn:mozilla:install-manifest"
-                   em:id="backforwardthumbnail@piro.sakura.ne.jp"
+                   em:id="bfthumbnail@piro.sakura.ne.jp"
                    em:name="Back &amp; Forward Thumbnail"
                    em:version="0.2.2007103101"
                    em:creator="SHIMODA Hiroshi"
                    em:description=""
-                   em:homepageURL="http://piro.sakura.ne.jp/xul/backforwardthumbnail/"
-                   em:optionsURL="chrome://backforwardthumbnail/content/config.xul">
+                   em:homepageURL="http://piro.sakura.ne.jp/xul/bfthumbnail/"
+                   em:optionsURL="chrome://bfthumbnail/content/config.xul">
 <!--
                    em:iconURL=""
 -->

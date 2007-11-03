@@ -1,8 +1,8 @@
-content	backforwardthumbnail	jar:chrome/backforwardthumbnail.jar!/content/backforwardthumbnail/
+content	bfthumbnail	jar:chrome/bfthumbnail.jar!/content/bfthumbnail/
 
-overlay	chrome://browser/content/browser.xul	chrome://backforwardthumbnail/content/backforwardthumbnail.xul
+overlay	chrome://browser/content/browser.xul	chrome://bfthumbnail/content/bfthumbnail.xul
 
-locale	backforwardthumbnail	en-US	jar:chrome/backforwardthumbnail.jar!/locale/en-US/backforwardthumbnail/
-locale	backforwardthumbnail	ja	jar:chrome/backforwardthumbnail.jar!/locale/ja/backforwardthumbnail/
+locale	bfthumbnail	en-US	jar:chrome/bfthumbnail.jar!/locale/en-US/bfthumbnail/
+locale	bfthumbnail	ja	jar:chrome/bfthumbnail.jar!/locale/ja/bfthumbnail/
 
-skin	backforwardthumbnail	classic/1.0	jar:chrome/backforwardthumbnail.jar!/skin/classic/backforwardthumbnail/
+skin	bfthumbnail	classic/1.0	jar:chrome/bfthumbnail.jar!/skin/classic/bfthumbnail/

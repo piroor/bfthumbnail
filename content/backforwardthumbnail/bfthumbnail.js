@@ -1,11 +1,11 @@
-var BackForwardThumbnailService = { 
+var BFThumbnailService = { 
 
 	kTHUMBNAILS_DIR : 'thumbnails',
-	kTOOLTIPTEXT    : 'backforwardthumbnail-tooltiptext-backup',
+	kTOOLTIPTEXT    : 'bfthumbnail-tooltiptext-backup',
 
 	thumbnailBG : 'rgb(192,192,192)',
 
-	kDATABASE  : 'backforwardthumbnail.sqlite',
+	kDATABASE  : 'bfthumbnail.sqlite',
 	kTABLE     : 'thumbnails',
 	kKEY       : 'key',
 	kTHUMBNAIL : 'thumbnail',
@@ -27,23 +27,23 @@ var BackForwardThumbnailService = {
  
 	get tooltip() 
 	{
-		return document.getElementById('backforwardthumbnail-tooltip');
+		return document.getElementById('bfthumbnail-tooltip');
 	},
 	get tooltipLabel()
 	{
-		return document.getElementById('backforwardthumbnail-tooltip-label');
+		return document.getElementById('bfthumbnail-tooltip-label');
 	},
 	get tooltipThumbnail()
 	{
-		return document.getElementById('backforwardthumbnail-tooltip-thumbnail');
+		return document.getElementById('bfthumbnail-tooltip-thumbnail');
 	},
 	get tooltipTitle()
 	{
-		return document.getElementById('backforwardthumbnail-tooltip-title');
+		return document.getElementById('bfthumbnail-tooltip-title');
 	},
 	get tooltipURI()
 	{
-		return document.getElementById('backforwardthumbnail-tooltip-uri');
+		return document.getElementById('bfthumbnail-tooltip-uri');
 	},
   
 /* Initializing */ 
@@ -59,24 +59,24 @@ var BackForwardThumbnailService = {
 			eval('window.BrowserCustomizeToolbar = '+
 				window.BrowserCustomizeToolbar.toSource().replace(
 					'{',
-					'{ BackForwardThumbnailService.destroyButtons(); '
+					'{ BFThumbnailService.destroyButtons(); '
 				)
 			);
 		}
 
 		var toolbox = document.getElementById('navigator-toolbox');
 		if (toolbox.customizeDone) {
-			toolbox.__backforwardthumbnail__customizeDone = toolbox.customizeDone;
+			toolbox.__bfthumbnail__customizeDone = toolbox.customizeDone;
 			toolbox.customizeDone = function(aChanged) {
-				this.__backforwardthumbnail__customizeDone(aChanged);
-				BackForwardThumbnailService.initButtons();
+				this.__bfthumbnail__customizeDone(aChanged);
+				BFThumbnailService.initButtons();
 			};
 		}
 		if ('BrowserToolboxCustomizeDone' in window) {
-			window.__backforwardthumbnail__BrowserToolboxCustomizeDone = window.BrowserToolboxCustomizeDone;
+			window.__bfthumbnail__BrowserToolboxCustomizeDone = window.BrowserToolboxCustomizeDone;
 			window.BrowserToolboxCustomizeDone = function(aChanged) {
-				window.__backforwardthumbnail__BrowserToolboxCustomizeDone.apply(window, arguments);
-				BackForwardThumbnailService.initButtons();
+				window.__bfthumbnail__BrowserToolboxCustomizeDone.apply(window, arguments);
+				BFThumbnailService.initButtons();
 			};
 		}
 
@@ -107,7 +107,7 @@ var BackForwardThumbnailService = {
 		aTab.__thumbnailsaver__parentTabBrowser = aTabBrowser;
 
 		var filter = Components.classes['@mozilla.org/appshell/component/browser-status-filter;1'].createInstance(Components.interfaces.nsIWebProgress);
-		var listener = new BackForwardThumbnailProgressListener(aTab, aTabBrowser);
+		var listener = new BFThumbnailProgressListener(aTab, aTabBrowser);
 		filter.addProgressListener(listener, Components.interfaces.nsIWebProgress.NOTIFY_ALL);
 		aTab.linkedBrowser.webProgress.addProgressListener(filter, Components.interfaces.nsIWebProgress.NOTIFY_ALL);
 		aTab.__thumbnailsaver__progressListener = listener;
@@ -218,7 +218,7 @@ var BackForwardThumbnailService = {
 		var h   = win.innerHeight;
 		var aspectRatio = 1 / 0.75;
 
-		var size = aThis.getPref('extensions.backforwardthumbnail.size');
+		var size = aThis.getPref('extensions.bfthumbnail.size');
 		var canvasW = Math.floor((aspectRatio < 1) ? (size * aspectRatio) : size );
 		var canvasH = Math.floor((aspectRatio > 1) ? (size / aspectRatio) : size );
 
@@ -383,7 +383,7 @@ var BackForwardThumbnailService = {
 	{
 		document.tooltipNode = aNode;
 		this.tooltip.showPopup(aNode, -1, -1, 'tooltip', 'bottomleft', 'topleft');
-		this.delayedHide(aNode, this.getPref('extensions.backforwardthumbnail.autoHideDelay'));
+		this.delayedHide(aNode, this.getPref('extensions.bfthumbnail.autoHideDelay'));
 	},
  
 	hide : function(aNode) 
@@ -457,7 +457,7 @@ var BackForwardThumbnailService = {
 	updateDB : function()
 	{
 		var statement = this.thumbnails.createStatement('DELETE FROM '+this.kTABLE+' WHERE '+this.kDATE+' < ?1');
-		var days = this.getPref('extensions.backforwardthumbnail.expire.days');
+		var days = this.getPref('extensions.bfthumbnail.expire.days');
 		if (days < 0) return;
 
 		statement.bindDoubleParameter(0, Date.now() - (1000 * 60 * 60 * 24 * days));
@@ -604,15 +604,15 @@ var BackForwardThumbnailService = {
    
 }; 
 
-window.addEventListener('load', BackForwardThumbnailService, false);
-window.addEventListener('unload', BackForwardThumbnailService, false);
+window.addEventListener('load', BFThumbnailService, false);
+window.addEventListener('unload', BFThumbnailService, false);
  
-function BackForwardThumbnailProgressListener(aTab, aTabBrowser) 
+function BFThumbnailProgressListener(aTab, aTabBrowser) 
 {
 	this.mTab = aTab;
 	this.mTabBrowser = aTabBrowser;
 }
-BackForwardThumbnailProgressListener.prototype = {
+BFThumbnailProgressListener.prototype = {
 	mTab        : null,
 	mTabBrowser : null,
 	onProgressChange: function(aWebProgress, aRequest, aCurSelfProgress, aMaxSelfProgress, aCurTotalProgress, aMaxTotalProgress)
@@ -625,14 +625,14 @@ BackForwardThumbnailProgressListener.prototype = {
 			aStateFlags & nsIWebProgressListener.STATE_STOP &&
 			aStateFlags & nsIWebProgressListener.STATE_IS_NETWORK
 			) {
-			BackForwardThumbnailService.createThumbnail(this.mTab, this.mTabBrowser);
-			if (BackForwardThumbnailService.shown &&
+			BFThumbnailService.createThumbnail(this.mTab, this.mTabBrowser);
+			if (BFThumbnailService.shown &&
 				this.mTabBrowser == gBrowser &&
 				this.mTab.getAttribute('selected') == 'true') {
 				var target = document.tooltipNode;
-				BackForwardThumbnailService.hide(target);
+				BFThumbnailService.hide(target);
 				if (target && target.getAttribute('disabled') != 'true')
-					BackForwardThumbnailService.show(target);
+					BFThumbnailService.show(target);
 			}
 		}
 	},
