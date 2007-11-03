@@ -3,7 +3,13 @@ var BackForwardThumbnailService = {
 	kTHUMBNAILS_DIR : 'thumbnails',
 	kTOOLTIPTEXT    : 'backforwardthumbnail-tooltiptext-backup',
 
-	thumbnailBG : 'rgb(128,128,128)',
+	thumbnailBG : 'rgb(192,192,192)',
+
+	kDATABASE  : 'backforwardthumbnail.sqlite',
+	kTABLE     : 'thumbnails',
+	kKEY       : 'key',
+	kTHUMBNAIL : 'thumbnail',
+	kDATE      : 'last_updated_on',
 
 	shown : false,
 	 
@@ -57,91 +63,9 @@ var BackForwardThumbnailService = {
 	{
 		return document.getElementById('backforwardthumbnail-tooltip-uri');
 	},
- 
-	get thumbnailsDir() 
-	{
-		if (!this._thumbnailsDir) {
-			const DirectoryService = Components.classes['@mozilla.org/file/directory_service;1'].getService(Components.interfaces.nsIProperties);
-			this._thumbnailsDir = DirectoryService.get('ProfD', Components.interfaces.nsIFile);
-			this._thumbnailsDir.append(this.kTHUMBNAILS_DIR);
-		}
-		if (!this._thumbnailsDir.exists())
-			this._thumbnailsDir.create(this._thumbnailsDir.DIRECTORY_TYPE, 0755);
-		return this._thumbnailsDir;
-	},
-	_thumbnailsDir : null,
- 
-	get IOService() 
-	{
-		if (!this._IOService) {
-			this._IOService = IOService = Components.classes['@mozilla.org/network/io-service;1'].getService(Components.interfaces.nsIIOService);
-		}
-		return this._IOService;
-	},
-	_IOService : null,
   
-/* Utilities */ 
-	 
-	getHashFromString : function(aString) 
-	{
-		var hasher = Components.classes['@mozilla.org/security/hash;1'].createInstance(Components.interfaces.nsICryptoHash);
-		hasher.init(hasher.MD5)
-
-		var array = aString.split('').map(function(aChar) {
-						return aChar.charCodeAt(0);
-					});
-		hasher.update(array, array.length);
-		var hash = hasher.finish(false);
-
-		var hexchars = '0123456789ABCDEF';
-		var hexrep = new Array(hash.length * 2);
-		hash.split('').forEach(function(aChar, aIndex) {
-			hexrep[aIndex * 2] = hexchars.charAt((aChar.charCodeAt(0) >> 4) & 15);
-			hexrep[aIndex * 2 + 1] = hexchars.charAt(aChar.charCodeAt(0) & 15);
-		});
-		return hexrep.join('');
-	},
- 
-	getThumbnailForURI : function(aURI) 
-	{
-		var file = Components.classes['@mozilla.org/file/local;1'].createInstance(Components.interfaces.nsILocalFile);
-		file.initWithPath(this.thumbnailsDir.path);
-		file.append(this.getHashFromString(aURI));
-		return file;
-	},
- 
-	updateCache : function() 
-	{
-		var files = this.thumbnailsDir.directoryEntries;
-		var file;
-		var filesArray = [];
-		var total = 0;
-		while (files.hasMoreElements())
-		{
-			file = files.getNext().QueryInterface(Components.interfaces.nsIFile);
-			total += file.fileSize;
-			filesArray.push({
-				file : file,
-				size : file.fileSize,
-				date : file.lastModifiedTime
-			});
-		}
-
-		var max = this.getPref('extensions.backforwardthumbnail.maxCache') * 1024;
-		if (total < max) return;
-
-		filesArray.sort(function(aA, aB) { return aA.date - aB.date });
-
-		while (total < max)
-		{
-			file = filesArray.unshift();
-			total -= file.size;
-			file.file.remove(true);
-		}
-	},
- 	 
 /* Initializing */ 
-	
+	 
 	init : function() 
 	{
 		if (!('gBrowser' in window)) return;
@@ -238,7 +162,7 @@ var BackForwardThumbnailService = {
 
 		this.removePrefListener(this);
 	},
-	 
+	
 	destroyTabBrowser : function(aTabBrowser) 
 	{
 		aTabBrowser.removeEventListener('TabOpen',  this, false);
@@ -298,7 +222,7 @@ var BackForwardThumbnailService = {
 		var h   = win.innerHeight;
 		var aspectRatio = 1 / 0.75;
 
-		var size = this.getPref('extensions.backforwardthumbnail.size');
+		var size = aThis.getPref('extensions.backforwardthumbnail.size');
 		var canvasW = Math.floor((aspectRatio < 1) ? (size * aspectRatio) : size );
 		var canvasH = Math.floor((aspectRatio > 1) ? (size / aspectRatio) : size );
 
@@ -337,12 +261,12 @@ var BackForwardThumbnailService = {
 					if ((iW / iH) < 1) {
 						iW = iW * canvasH / iH;
 						x = Math.floor((canvasW - iW) / 2 );
-						iH = size;
+						iH = canvasH;
 					}
 					else {
 						iH = iH * canvasW / iW;
 						y = Math.floor((canvasH - iH) / 2 );
-						iW = size;
+						iW = canvasW;
 					}
 					ctx.drawImage(aImage, x, y, iW, iH);
 					ctx.restore();
@@ -370,17 +294,10 @@ var BackForwardThumbnailService = {
 		}
 
 		if (rendered) {
-			var file = this.getThumbnailForURI(aImage ? aImage.src : win.location.href );
-			var data = canvas.toDataURL();
-			if (file.exists())
-				file.remove(true);
-
-			var Persist = Components.classes['@mozilla.org/embedding/browser/nsWebBrowserPersist;1'].createInstance(Components.interfaces.nsIWebBrowserPersist);
-			data = this.IOService.newURI(data, null, null);
-			Persist.saveURI(data, null, null, null, null, file);
+			aThis.saveThumbnail((aImage ? aImage.src : win.location.href ), canvas.toDataURL());
 		}
 	},
- 
+ 	
 	fillInTooltip : function(aTarget) 
 	{
 		if (!aTarget || aTarget.getAttribute('disabled') == 'true')
@@ -443,7 +360,7 @@ var BackForwardThumbnailService = {
 		aEntry = aEntry.QueryInterface(Components.interfaces.nsIHistoryEntry);
 		this.tooltipTitle.value = aEntry.title;
 		this.tooltipURI.value = aEntry.URI.spec;
-		this.tooltipThumbnail.src = this.IOService.newFileURI(this.getThumbnailForURI(aEntry.URI.spec)).spec;
+		this.tooltipThumbnail.src = this.loadThumbnail(aEntry.URI.spec);
 	},
  
 	show : function(aNode) 
@@ -469,6 +386,56 @@ var BackForwardThumbnailService = {
 		if (this.delayedHideTimer) {
 			window.clearTimeout(this.delayedHideTimer);
 			this.delayedHideTimer = null;
+		}
+	},
+  
+/* Database */ 
+	 
+	get thumbnails() 
+	{
+		if (!this._thumbnails) {
+			const DirectoryService = Components.classes['@mozilla.org/file/directory_service;1'].getService(Components.interfaces.nsIProperties);
+			var file = DirectoryService.get('ProfD', Components.interfaces.nsIFile);
+			file.append(this.kDATABASE);
+
+			var storageService = Components.classes['@mozilla.org/storage/service;1'].getService(Components.interfaces.mozIStorageService);
+			this._thumbnails = storageService.openDatabase(file);
+
+			if(!this._thumbnails.tableExists(this.kTABLE)){
+				this._thumbnails.createTable(this.kTABLE,
+					this.kKEY+' TEXT PRIMARY KEY, '+this.kTHUMBNAIL+' TEXT, '+this.kDATE);
+			}
+		}
+		return this._thumbnails;
+	},
+	_thumbnails : null,
+ 
+	saveThumbnail : function(aURI, aThumbnailURI) 
+	{
+		var db = this.thumbnails;
+		var statement = db.createStatement('INSERT OR REPLACE INTO '+this.kTABLE+' VALUES(?1, ?2, ?3)');
+		statement.bindStringParameter(0, aURI);
+		statement.bindStringParameter(1, aThumbnailURI);
+		statement.bindDoubleParameter(2, Date.now());
+		try {
+			statement.executeStep();
+		}
+		catch(e) {
+			// ???
+		}
+	},
+ 
+	loadThumbnail : function(aURI) 
+	{
+		var db = this.thumbnails;
+		var statement = db.createStatement('SELECT * FROM '+this.kTABLE+' WHERE '+this.kKEY+' = ?1');
+		statement.bindStringParameter(0, aURI);
+		statement.executeStep();
+		try {
+			return statement.getString(1);
+		}
+		catch(e) { // there is no thumbnail for the page
+			return '';
 		}
 	},
   
