@@ -317,7 +317,7 @@ var BackForwardThumbnailService = {
 						aTarget.id == 'back-button' ? history.index - 1 : history.index + 1,
 						false
 					));
-					break;
+					return true;
 				}
 
 			case 'rewind-button':
@@ -348,32 +348,22 @@ var BackForwardThumbnailService = {
 								i -= step;
 							}
 							this.updateTooltipForHistoryEntry(entry);
-							return;
+							return true;
 						}
 					}
-					break;
+					this.updateTooltipForHistoryEntry(entry);
+					return true;
 				}
 
 			case 'rewind-prev-button':
 			case 'fastforward-next-button':
-				var type = (prevLink || /rewind/.test(aTarget.id)) ? 'prev' : 'next' ;
-				var link = (type == 'prev') ?
-						(
-							rf_shouldFindPrevLinks() ?
-								rewindforwardGetLinksFromAllFrames('prev') :
-								null
-						) :
-						(
-							rf_shouldFindNextLinks() ?
-								rewindforwardGetLinksFromAllFrames('next') :
-								null
-						);
+				var link = rewindforwardGetLinksFromAllFrames((prevLink || /rewind/.test(aTarget.id)) ? 'prev' : 'next' );
 				if (!link || !link.length) return true;
 				link = rewindforwardGetLinkInMainFrame(link);
 				this.tooltipTitle.value = link.label || '';
 				this.tooltipURI.value = link.href;
 				this.tooltipThumbnail.src = this.loadThumbnail(link.href);
-				break;
+				return true;
 
 			default:
 				return false;
