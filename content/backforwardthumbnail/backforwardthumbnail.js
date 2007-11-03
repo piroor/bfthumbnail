@@ -421,8 +421,9 @@ var BackForwardThumbnailService = {
 			statement.executeStep();
 		}
 		catch(e) {
-			// ???
+			dump('saveThumbnail\n'+e+'\n');
 		}
+		this.updateDB();
 	},
  
 	loadThumbnail : function(aURI) 
@@ -436,6 +437,19 @@ var BackForwardThumbnailService = {
 		}
 		catch(e) { // there is no thumbnail for the page
 			return '';
+		}
+	},
+ 
+	updateDB : function()
+	{
+		var db = this.thumbnails;
+		var statement = db.createStatement('DELETE FROM '+this.kTABLE+' WHERE '+this.kDATE+' < ?1');
+		statement.bindDoubleParameter(0, Date.now() - (1000 * 60 * 60 * 24 * this.getPref('extensions.backforwardthumbnail.expire.days')));
+		try {
+			statement.executeStep();
+		}
+		catch(e) {
+			dump('updateDB\n'+e+'\n');
 		}
 	},
   
