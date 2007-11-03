@@ -22,7 +22,7 @@
     <em:localized>
       <RDF:Description em:locale="en-US"
                        em:name="Back/Forward Thumbnail"
-                       em:description="Provides thumbnail for tooltips on "Back" and "Forward" buttons."/>
+                       em:description="Provides thumbnail for tooltips on &quot;Back&quot; and &quot;Forward&quot; buttons."/>
     </em:localized>
     <em:localized>
       <RDF:Description em:locale="ja"
