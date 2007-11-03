@@ -300,6 +300,7 @@ var BackForwardThumbnailService = {
 			return false;
 
 		this.tooltipLabel.value = aTarget.getAttribute(this.kTOOLTIPTEXT);
+		this.tooltipTitle.value = this.tooltipThumbnail.src = this.tooltipURI.value = '';
 
 		var mode     = aTarget.getAttribute('rewindforward-override') || aTarget.getAttribute('mode');
 		var prevLink = aTarget.getAttribute('rewindforward-prev') == 'true';
@@ -367,7 +368,7 @@ var BackForwardThumbnailService = {
 								rewindforwardGetLinksFromAllFrames('next') :
 								null
 						);
-				if (!link || !link.length) return false;
+				if (!link || !link.length) return true;
 				link = rewindforwardGetLinkInMainFrame(link);
 				this.tooltipTitle.value = link.label || '';
 				this.tooltipURI.value = link.href;
