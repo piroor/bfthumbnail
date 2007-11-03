@@ -45,7 +45,19 @@ var BFThumbnailService = {
 	{
 		return document.getElementById('bfthumbnail-tooltip-uri');
 	},
-  
+ 
+	get lastTarget() 
+	{
+		if (!this._lastTarget) return null;
+		return document.getElementById(this._lastTarget);
+	},
+	set lastTarget(aNode)
+	{
+		this._lastTarget = aNode ? aNode.id : null ;
+		return this.lastTarget;
+	},
+	_lastTarget : null,
+ 	 
 /* Initializing */ 
 	 
 	init : function() 
@@ -126,7 +138,7 @@ var BFThumbnailService = {
 	},
 	initButton : function(aButton)
 	{
-		if (!aButton || 
+		if (!aButton ||
 			!(aButton = document.getElementById(aButton)))
 			return;
 
@@ -188,7 +200,7 @@ var BFThumbnailService = {
 	},
 	destroyButtons : function(aButton)
 	{
-		if (!aButton || 
+		if (!aButton ||
 			!(aButton = document.getElementById(aButton)))
 			return;
 
@@ -293,7 +305,7 @@ var BFThumbnailService = {
 			aThis.saveThumbnail((aImage ? aImage.src : win.location.href ), canvas.toDataURL());
 		}
 	},
- 	
+ 
 	fillInTooltip : function(aTarget) 
 	{
 		if (!aTarget || aTarget.getAttribute('disabled') == 'true')
@@ -381,7 +393,10 @@ var BFThumbnailService = {
  
 	show : function(aNode) 
 	{
-		document.tooltipNode = aNode;
+		if (this.lastTarget != aNode)
+			this.hide(this.lastTarget);
+
+		this.lastTarget = document.tooltipNode = aNode;
 		this.tooltip.showPopup(aNode, -1, -1, 'tooltip', 'bottomleft', 'topleft');
 		this.delayedHide(aNode, this.getPref('extensions.bfthumbnail.autoHideDelay'));
 	},
@@ -389,6 +404,7 @@ var BFThumbnailService = {
 	hide : function(aNode) 
 	{
 		this.tooltip.hidePopup();
+		this.lastTarget = null;
 	},
 	delayedHide : function(aNode, aDelay)
 	{
@@ -454,7 +470,7 @@ var BFThumbnailService = {
 		}
 	},
  
-	updateDB : function()
+	updateDB : function() 
 	{
 		var statement = this.thumbnails.createStatement('DELETE FROM '+this.kTABLE+' WHERE '+this.kDATE+' < ?1');
 		var days = this.getPref('extensions.bfthumbnail.expire.days');
@@ -629,10 +645,11 @@ BFThumbnailProgressListener.prototype = {
 			if (BFThumbnailService.shown &&
 				this.mTabBrowser == gBrowser &&
 				this.mTab.getAttribute('selected') == 'true') {
-				var target = document.tooltipNode;
+				var target = BFThumbnailService.lastTarget;
 				BFThumbnailService.hide(target);
-				if (target && target.getAttribute('disabled') != 'true')
+				if (target && target.getAttribute('disabled') != 'true') {
 					BFThumbnailService.show(target);
+				}
 			}
 		}
 	},
