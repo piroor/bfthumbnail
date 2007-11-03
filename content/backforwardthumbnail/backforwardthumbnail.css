@@ -1,5 +1,6 @@
 @namespace url("http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul");
 
+#backforwardthumbnail-tooltip-title[value=""],
 #backforwardthumbnail-tooltip-thumbnail[src=""] {
 	visibility: collapse;
 }

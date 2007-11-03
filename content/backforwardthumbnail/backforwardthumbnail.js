@@ -25,24 +25,6 @@ var BackForwardThumbnailService = {
 		return gBrowser;
 	},
  
-	get backButton() 
-	{
-		return document.getElementById('back-button');
-	},
-	get rewindButton()
-	{
-		return document.getElementById('rewind-button');
-	},
- 
-	get forwardButton() 
-	{
-		return document.getElementById('forward-button');
-	},
-	get fastforwardButton()
-	{
-		return document.getElementById('fastforward-button');
-	},
- 
 	get tooltip() 
 	{
 		return document.getElementById('backforwardthumbnail-tooltip');
@@ -134,23 +116,25 @@ var BackForwardThumbnailService = {
  
 	initButtons : function() 
 	{
-		this.initButton(this.backButton);
-		this.initButton(this.forwardButton);
+		this.initButton('back-button');
+		this.initButton('forward-button');
 
-		this.initButton(this.rewindButton);
-		this.initButton(this.fastforwardButton);
+		this.initButton('rewind-button');
+		this.initButton('rewind-prev-button');
+		this.initButton('fastforward-button');
+		this.initButton('fastforward-next-button');
 	},
 	initButton : function(aButton)
 	{
-		if (!aButton) return;
+		if (!aButton || 
+			!(aButton = document.getElementById(aButton)))
+			return;
 
-		if (!aButton.hasAttribute(this.kTOOLTIPTEXT)) {
-			aButton.setAttribute(this.kTOOLTIPTEXT, aButton.getAttribute('tooltiptext'));
-			aButton.removeAttribute('tooltiptext');
+		if (!aButton.__beforeafterthumbnail__thumbnail) {
+			aButton.addEventListener('mouseover', this, false);
+			aButton.addEventListener('mouseout', this, false);
+			aButton.__beforeafterthumbnail__thumbnail = true;
 		}
-
-		aButton.addEventListener('mouseover', this, false);
-		aButton.addEventListener('mouseout', this, false);
 	},
   
 	destroy : function() 
@@ -194,18 +178,30 @@ var BackForwardThumbnailService = {
  
 	destroyButtons : function() 
 	{
-		this.destroyButtons(this.backButton);
-		this.destroyButtons(this.forwardButton);
+		this.destroyButtons('back-button');
+		this.destroyButtons('forward-button');
 
-		this.destroyButtons(this.rewindButton);
-		this.destroyButtons(this.fastforwardButton);
+		this.destroyButtons('rewind-button');
+		this.destroyButtons('rewind-prev-button');
+		this.destroyButtons('fastforward-button');
+		this.destroyButtons('fastforward-next-button');
 	},
 	destroyButtons : function(aButton)
 	{
-		if (!aButton) return;
+		if (!aButton || 
+			!(aButton = document.getElementById(aButton)))
+			return;
 
-		aButton.removeEventListener('mouseover', this, false);
-		aButton.removeEventListener('mouseout', this, false);
+		if (aButton.hasAttribute(this.kTOOLTIPTEXT)) {
+			aButton.setAttribute('tooltiptext', aButton.getAttribute(this.kTOOLTIPTEXT));
+			aButton.removeAttribute(this.kTOOLTIPTEXT);
+		}
+
+		if (aButton.__beforeafterthumbnail__thumbnail) {
+			aButton.removeEventListener('mouseover', this, false);
+			aButton.removeEventListener('mouseout', this, false);
+			aButton.__beforeafterthumbnail__thumbnail = false;
+		}
 	},
    
 /* thumbnail */ 
@@ -305,48 +301,77 @@ var BackForwardThumbnailService = {
 
 		this.tooltipLabel.value = aTarget.getAttribute(this.kTOOLTIPTEXT);
 
+		var mode     = aTarget.getAttribute('rewindforward-override') || aTarget.getAttribute('mode');
+		var prevLink = aTarget.getAttribute('rewindforward-prev') == 'true';
+		var nextLink = aTarget.getAttribute('rewindforward-next') == 'true';
+
 		switch (aTarget.id)
 		{
 			case 'back-button':
 			case 'forward-button':
-				var history = this.browser.sessionHistory;
-				if (!history) return false;
-				this.updateTooltipForHistoryEntry(history.getEntryAtIndex(
-					aTarget.id == 'back-button' ? history.index - 1 : history.index + 1,
-					false
-				));
-				break;
+				if (mode != 'navigation' && !prevLink && !nextLink) {
+					var history = this.browser.sessionHistory;
+					if (!history) return false;
+					this.updateTooltipForHistoryEntry(history.getEntryAtIndex(
+						aTarget.id == 'back-button' ? history.index - 1 : history.index + 1,
+						false
+					));
+					break;
+				}
 
 			case 'rewind-button':
 			case 'fastforward-button':
-				var history = this.browser.sessionHistory;
-				if (!history) return false;
+				if (mode == 'navigation' && !prevLink && !nextLink) {
+					var history = this.browser.sessionHistory;
+					if (!history) return false;
 
-				var current = history.getEntryAtIndex(history.index, false);
-				var c_host  = current.URI && /\w+:\/\/([^\/:]+)(\/|$)/.test(current.URI.spec) ? RegExp.$1 : null ;
+					var current = history.getEntryAtIndex(history.index, false);
+					var c_host  = current.URI && /\w+:\/\/([^\/:]+)(\/|$)/.test(current.URI.spec) ? RegExp.$1 : null ;
 
-				var check = (aTarget.id == 'rewind-button') ? function(aIndex) { return aIndex > -1 } : function(aIndex) { return aIndex < SH.count }
-				var step  = (aTarget.id == 'rewind-button') ? -1 : 1 ;
-				var start = (aTarget.id == 'rewind-button') ? history.index-1 : history.index+1 ;
+					var check = (aTarget.id == 'rewind-button') ? function(aIndex) { return aIndex > -1 } : function(aIndex) { return aIndex < history.count }
+					var step  = (aTarget.id == 'rewind-button') ? -1 : 1 ;
+					var start = (aTarget.id == 'rewind-button') ? history.index-1 : history.index+1 ;
 
-				var entry,
-					t_host;
-				for (var i = start; check(i); i += step)
-				{
-					entry  = history.getEntryAtIndex(i, false);
-					t_host  = current.URI && /\w+:\/\/([^\/:]+)(\/|$)/.test(current.URI.spec) ? RegExp.$1 : null ;
-					if ((c_host && !t_host) || (!c_host && t_host) || (c_host != t_host)) {
-						if (this.getPref('rewindforward.goToEndPointOfCurrentDomain')) {
-							if (i == start) {
-								c_host = t_host;
-								continue;
+					var entry,
+						t_host;
+					for (var i = start; check(i); i += step)
+					{
+						entry  = history.getEntryAtIndex(i, false);
+						t_host = entry.URI && /\w+:\/\/([^\/:]+)(\/|$)/.test(entry.URI.spec) ? RegExp.$1 : null ;
+						if ((c_host && !t_host) || (!c_host && t_host) || (c_host != t_host)) {
+							if (this.getPref('rewindforward.goToEndPointOfCurrentDomain')) {
+								if (i == start) {
+									c_host = t_host;
+									continue;
+								}
+								i -= step;
 							}
-							i -= step;
+							this.updateTooltipForHistoryEntry(entry);
+							return;
 						}
-						this.updateTooltipForHistoryEntry(entry);
-						return;
 					}
+					break;
 				}
+
+			case 'rewind-prev-button':
+			case 'fastforward-next-button':
+				var type = (prevLink || /rewind/.test(aTarget.id)) ? 'prev' : 'next' ;
+				var link = (type == 'prev') ?
+						(
+							rf_shouldFindPrevLinks() ?
+								rewindforwardGetLinksFromAllFrames('prev') :
+								null
+						) :
+						(
+							rf_shouldFindNextLinks() ?
+								rewindforwardGetLinksFromAllFrames('next') :
+								null
+						);
+				if (!link || !link.length) return false;
+				link = rewindforwardGetLinkInMainFrame(link);
+				this.tooltipTitle.value = link.label || '';
+				this.tooltipURI.value = link.href;
+				this.tooltipThumbnail.src = this.loadThumbnail(link.href);
 				break;
 
 			default:
@@ -476,6 +501,10 @@ var BackForwardThumbnailService = {
 				break;
 
 			case 'mouseover':
+				if (aEvent.target.hasAttribute('tooltiptext')) {
+					aEvent.target.setAttribute(this.kTOOLTIPTEXT, aEvent.target.getAttribute('tooltiptext'));
+					aEvent.target.removeAttribute('tooltiptext');
+				}
 				if (aEvent.target.getAttribute('disabled') == 'true') return;
 				this.cancelDelayedHide();
 				this.show(aEvent.target);
