@@ -5,7 +5,7 @@
   <RDF:Description RDF:about="urn:mozilla:install-manifest"
                    em:id="bfthumbnail@piro.sakura.ne.jp"
                    em:name="Back &amp; Forward Thumbnail"
-                   em:version="0.2.2007103101"
+                   em:version="0.1.2007110301"
                    em:creator="SHIMODA Hiroshi"
                    em:description=""
                    em:homepageURL="http://piro.sakura.ne.jp/xul/bfthumbnail/"
@@ -21,13 +21,13 @@
 
     <em:localized>
       <RDF:Description em:locale="en-US"
-                       em:name="Back &amp; Forward Thumbnail"
-                       em:description=""/>
+                       em:name="Back/Forward Thumbnail"
+                       em:description="Provides thumbnail for tooltips on "Back" and "Forward" buttons."/>
     </em:localized>
     <em:localized>
       <RDF:Description em:locale="ja"
-                       em:name=""
-                       em:description=""/>
+                       em:name="戻る/進むサムネイル"
+                       em:description="「戻る」「進む」ボタンのツールチップにそのページの縮小画像を表示します。"/>
     </em:localized>
 
     <em:targetApplication>
