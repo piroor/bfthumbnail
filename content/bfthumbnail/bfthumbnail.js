@@ -385,6 +385,7 @@ var BFThumbnailService = {
 	},
 	updateTooltipForHistoryEntry : function(aEntry)
 	{
+		if (!aEntry) return;
 		aEntry = aEntry.QueryInterface(Components.interfaces.nsIHistoryEntry);
 		this.tooltipTitle.value = aEntry.title;
 		this.tooltipURI.value = aEntry.URI.spec;
