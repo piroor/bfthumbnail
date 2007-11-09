@@ -15,7 +15,7 @@
 <popupset id="mainPopupSet">
 	<tooltip id="bfthumbnail-tooltip"
 		position="after_start"
-		onpopupshowing="return (BFThumbnailService.fillInTooltip(document.tooltipNode) ? (BFThumbnailService.shown = true) : false );"
+		onpopupshowing="return (BFThumbnailService.fillInTooltip() ? (BFThumbnailService.shown = true) : false );"
 		onpopuphiding="BFThumbnailService.shown = false;">
 <!--
 		noautohide="true"

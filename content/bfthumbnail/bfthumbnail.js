@@ -13,46 +13,6 @@ var BFThumbnailService = {
 
 	shown : false,
 
-	NSResolver : {
-		lookupNamespaceURI : function(aPrefix)
-		{
-			switch (aPrefix)
-			{
-				case 'xul':
-					return 'http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul';
-				case 'html':
-				case 'xhtml':
-					return 'http://www.w3.org/1999/xhtml';
-				case 'xlink':
-					return 'http://www.w3.org/1999/xlink';
-				default:
-					return '';
-			}
-		}
-	},
-	evaluateXPath : function(aExpression, aContext, aType)
-	{
-		if (!aType) aType = XPathResult.ORDERED_NODE_SNAPSHOT_TYPE;
-		try {
-			var xpathResult = document.evaluate(
-					aExpression,
-					aContext,
-					this.NSResolver,
-					aType,
-					null
-				);
-		}
-		catch(e) {
-			return {
-				singleNodeValue : null,
-				snapshotLength  : 0,
-				snapshotItem    : function() {
-					return null
-				}
-			};
-		}
-		return xpathResult;
-	},
 	 
 /* references */ 
 	 
@@ -87,17 +47,60 @@ var BFThumbnailService = {
 		return document.getElementById('bfthumbnail-tooltip-uri');
 	},
  
-	get lastTarget() 
-	{
-		if (!this._lastTarget) return null;
-		return document.getElementById(this._lastTarget);
+	lastTarget : null,
+  
+/* utilities */ 
+	 
+	NSResolver : { 
+		lookupNamespaceURI : function(aPrefix)
+		{
+			switch (aPrefix)
+			{
+				case 'xul':
+					return 'http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul';
+				case 'html':
+				case 'xhtml':
+					return 'http://www.w3.org/1999/xhtml';
+				case 'xlink':
+					return 'http://www.w3.org/1999/xlink';
+				default:
+					return '';
+			}
+		}
 	},
-	set lastTarget(aNode)
+ 
+	evaluateXPath : function(aExpression, aContext, aType) 
 	{
-		this._lastTarget = aNode ? aNode.id : null ;
-		return this.lastTarget;
+		if (!aType) aType = XPathResult.ORDERED_NODE_SNAPSHOT_TYPE;
+		try {
+			var xpathResult = document.evaluate(
+					aExpression,
+					aContext,
+					this.NSResolver,
+					aType,
+					null
+				);
+		}
+		catch(e) {
+			return {
+				singleNodeValue : null,
+				snapshotLength  : 0,
+				snapshotItem    : function() {
+					return null
+				}
+			};
+		}
+		return xpathResult;
 	},
-	_lastTarget : null,
+ 
+	getButtonFromEvent : function(aEvent) 
+	{
+		return this.evaluateXPath(
+				'ancestor-or-self::xul:toolbarbutton[@tooltiptext or @'+this.kTOOLTIPTEXT+']',
+				aEvent.originalTarget || aEvent.target,
+				XPathResult.FIRST_ORDERED_NODE_TYPE
+			).singleNodeValue;
+	},
   
 /* Initializing */ 
 	 
@@ -169,6 +172,8 @@ var BFThumbnailService = {
  
 	initButtons : function() 
 	{
+		this.lastTarget = null;
+
 		var backButton = this.evaluateXPath(
 				'/descendant::xul:toolbar/xul:toolbarbutton[@id="back-button"]',
 				document,
@@ -197,7 +202,8 @@ var BFThumbnailService = {
 		this.initButton('fastforward-button');
 		this.initButton('fastforward-next-button');
 	},
-	initButton : function(aButton)
+	 
+	initButton : function(aButton) 
 	{
 		if (!aButton)
 			return;
@@ -206,13 +212,13 @@ var BFThumbnailService = {
 			!(aButton = document.getElementById(aButton)))
 			return;
 
-		if (!aButton.__beforeafterthumbnail__thumbnail) {
+		if (!aButton.__bfthumbnail__thumbnail) {
 			aButton.addEventListener('mouseover', this, false);
 			aButton.addEventListener('mouseout', this, false);
-			aButton.__beforeafterthumbnail__thumbnail = true;
+			aButton.__bfthumbnail__thumbnail = true;
 		}
 	},
-  
+   
 	destroy : function() 
 	{
 		this.destroyTabBrowser(gBrowser);
@@ -222,7 +228,7 @@ var BFThumbnailService = {
 
 		this.removePrefListener(this);
 	},
-	
+	 
 	destroyTabBrowser : function(aTabBrowser) 
 	{
 		aTabBrowser.removeEventListener('TabOpen',  this, false);
@@ -254,6 +260,8 @@ var BFThumbnailService = {
  
 	destroyButtons : function() 
 	{
+		this.lastTarget = null;
+
 		var backButton = this.evaluateXPath(
 				'/descendant::xul:toolbar/xul:toolbarbutton[@id="back-button"]',
 				document,
@@ -282,7 +290,8 @@ var BFThumbnailService = {
 		this.destroyButton('fastforward-button');
 		this.destroyButton('fastforward-next-button');
 	},
-	destroyButton : function(aButton)
+	 
+	destroyButton : function(aButton) 
 	{
 		if (!aButton)
 			return;
@@ -296,13 +305,13 @@ var BFThumbnailService = {
 			aButton.removeAttribute(this.kTOOLTIPTEXT);
 		}
 
-		if (aButton.__beforeafterthumbnail__thumbnail) {
+		if (aButton.__bfthumbnail__thumbnail) {
 			aButton.removeEventListener('mouseover', this, false);
 			aButton.removeEventListener('mouseout', this, false);
-			aButton.__beforeafterthumbnail__thumbnail = false;
+			aButton.__bfthumbnail__thumbnail = false;
 		}
 	},
-   
+ 	   
 /* thumbnail */ 
 	 
 	createThumbnail : function(aTab, aTabBrowser, aThis, aImage) 
@@ -393,19 +402,20 @@ var BFThumbnailService = {
 		}
 	},
  
-	fillInTooltip : function(aTarget) 
+	fillInTooltip : function() 
 	{
-		if (!aTarget || aTarget.getAttribute('disabled') == 'true')
+		var target = this.lastTarget;
+		if (!target || target.getAttribute('disabled') == 'true')
 			return false;
 
-		this.tooltipLabel.value = aTarget.getAttribute(this.kTOOLTIPTEXT);
+		this.tooltipLabel.value = target.getAttribute(this.kTOOLTIPTEXT);
 		this.tooltipTitle.value = this.tooltipThumbnail.src = this.tooltipURI.value = '';
 
-		var mode     = aTarget.getAttribute('rewindforward-override') || aTarget.getAttribute('mode');
-		var prevLink = aTarget.getAttribute('rewindforward-prev') == 'true';
-		var nextLink = aTarget.getAttribute('rewindforward-next') == 'true';
+		var mode     = target.getAttribute('rewindforward-override') || target.getAttribute('mode');
+		var prevLink = target.getAttribute('rewindforward-prev') == 'true';
+		var nextLink = target.getAttribute('rewindforward-next') == 'true';
 
-		switch (aTarget.id)
+		switch (target.id)
 		{
 			case 'back-button':
 			case 'forward-button':
@@ -413,7 +423,7 @@ var BFThumbnailService = {
 					var history = this.browser.sessionHistory;
 					if (!history) return false;
 					this.updateTooltipForHistoryEntry(history.getEntryAtIndex(
-						aTarget.id == 'back-button' ? history.index - 1 : history.index + 1,
+						target.id == 'back-button' ? history.index - 1 : history.index + 1,
 						false
 					));
 					return true;
@@ -428,9 +438,9 @@ var BFThumbnailService = {
 					var current = history.getEntryAtIndex(history.index, false);
 					var c_host  = current.URI && /\w+:\/\/([^\/:]+)(\/|$)/.test(current.URI.spec) ? RegExp.$1 : null ;
 
-					var check = (aTarget.id == 'rewind-button') ? function(aIndex) { return aIndex > -1 } : function(aIndex) { return aIndex < history.count }
-					var step  = (aTarget.id == 'rewind-button') ? -1 : 1 ;
-					var start = (aTarget.id == 'rewind-button') ? history.index-1 : history.index+1 ;
+					var check = (target.id == 'rewind-button') ? function(aIndex) { return aIndex > -1 } : function(aIndex) { return aIndex < history.count }
+					var step  = (target.id == 'rewind-button') ? -1 : 1 ;
+					var start = (target.id == 'rewind-button') ? history.index-1 : history.index+1 ;
 
 					var entry,
 						t_host;
@@ -456,7 +466,7 @@ var BFThumbnailService = {
 
 			case 'rewind-prev-button':
 			case 'fastforward-next-button':
-				var link = rewindforwardGetLinksFromAllFrames((prevLink || /rewind/.test(aTarget.id)) ? 'prev' : 'next' );
+				var link = rewindforwardGetLinksFromAllFrames((prevLink || /rewind/.test(target.id)) ? 'prev' : 'next' );
 				if (!link || !link.length) return true;
 				link = rewindforwardGetLinkInMainFrame(link);
 				this.tooltipTitle.value = link.label || '';
@@ -484,13 +494,24 @@ var BFThumbnailService = {
 		if (this.lastTarget != aNode)
 			this.hide(this.lastTarget);
 
-		this.lastTarget = document.tooltipNode = aNode;
-		this.tooltip.showPopup(aNode, -1, -1, 'tooltip', 'bottomleft', 'topleft');
+		if (!aNode) return;
+
+		this.cancelDelayedHide();
+		if (aNode.getAttribute('disabled') == 'true') return;
+
+		document.tooltipNode = this.lastTarget = aNode;
+
+		if ('openPopup' in this.tooltip) // Firefox 3
+			this.tooltip.openPopup(aNode, 'after_start', 0, 0, false, true);
+		else
+			this.tooltip.showPopup(aNode, -1, -1, 'tooltip', 'bottomleft', 'topleft');
+
 		this.delayedHide(aNode, this.getPref('extensions.bfthumbnail.autoHideDelay'));
 	},
  
 	hide : function(aNode) 
 	{
+		this.cancelDelayedHide();
 		this.tooltip.hidePopup();
 		this.lastTarget = null;
 	},
@@ -596,18 +617,20 @@ var BFThumbnailService = {
 				break;
 
 			case 'mouseover':
-				if (aEvent.target.hasAttribute('tooltiptext')) {
-					aEvent.target.setAttribute(this.kTOOLTIPTEXT, aEvent.target.getAttribute('tooltiptext'));
-					aEvent.target.removeAttribute('tooltiptext');
+				var button = this.getButtonFromEvent(aEvent);
+				if (!button) return;
+				if (button.hasAttribute('tooltiptext')) {
+					button.setAttribute(this.kTOOLTIPTEXT, button.getAttribute('tooltiptext'));
+					button.removeAttribute('tooltiptext');
 				}
-				if (aEvent.target.getAttribute('disabled') == 'true') return;
-				this.cancelDelayedHide();
-				this.show(aEvent.target);
+				if (button.getAttribute('disabled') == 'true') return;
+				this.show(button);
 				break;
 
 			case 'mouseout':
-				if (aEvent.target.getAttribute('disabled') == 'true') return;
-				this.delayedHide(aEvent.target);
+				var button = this.getButtonFromEvent(aEvent);
+				if (button.getAttribute('disabled') == 'true') return;
+				this.delayedHide(button);
 				break;
 		}
 	},
