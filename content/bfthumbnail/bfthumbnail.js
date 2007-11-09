@@ -12,6 +12,47 @@ var BFThumbnailService = {
 	kDATE      : 'last_updated_on',
 
 	shown : false,
+
+	NSResolver : {
+		lookupNamespaceURI : function(aPrefix)
+		{
+			switch (aPrefix)
+			{
+				case 'xul':
+					return 'http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul';
+				case 'html':
+				case 'xhtml':
+					return 'http://www.w3.org/1999/xhtml';
+				case 'xlink':
+					return 'http://www.w3.org/1999/xlink';
+				default:
+					return '';
+			}
+		}
+	},
+	evaluateXPath : function(aExpression, aContext, aType)
+	{
+		if (!aType) aType = XPathResult.ORDERED_NODE_SNAPSHOT_TYPE;
+		try {
+			var xpathResult = document.evaluate(
+					aExpression,
+					aContext,
+					this.NSResolver,
+					aType,
+					null
+				);
+		}
+		catch(e) {
+			return {
+				singleNodeValue : null,
+				snapshotLength  : 0,
+				snapshotItem    : function() {
+					return null
+				}
+			};
+		}
+		return xpathResult;
+	},
 	 
 /* references */ 
 	 
@@ -57,7 +98,7 @@ var BFThumbnailService = {
 		return this.lastTarget;
 	},
 	_lastTarget : null,
- 	 
+  
 /* Initializing */ 
 	 
 	init : function() 
@@ -128,8 +169,28 @@ var BFThumbnailService = {
  
 	initButtons : function() 
 	{
-		this.initButton('back-button');
-		this.initButton('forward-button');
+		var backButton = this.evaluateXPath(
+				'/descendant::xul:toolbar/xul:toolbarbutton[@id="back-button"]',
+				document,
+				XPathResult.FIRST_ORDERED_NODE_TYPE
+			).singleNodeValue;
+		var forwardButton = this.evaluateXPath(
+				'/descendant::xul:toolbar/xul:toolbarbutton[@id="forward-button"]',
+				document,
+				XPathResult.FIRST_ORDERED_NODE_TYPE
+			).singleNodeValue;
+
+		if (backButton.getAttribute('unified') == 'full') {
+			forwardButton = document.getAnonymousElementByAttribute(backButton, 'id', 'forward-button');
+			backButton = document.getAnonymousElementByAttribute(backButton, 'id', 'back-button');
+		}
+		else if (forwardButton.getAttribute('unified') == 'full') {
+			backButton = document.getAnonymousElementByAttribute(forwardButton, 'id', 'back-button');
+			forwardButton = document.getAnonymousElementByAttribute(forwardButton, 'id', 'forward-button');
+		}
+
+		this.initButton(backButton);
+		this.initButton(forwardButton);
 
 		this.initButton('rewind-button');
 		this.initButton('rewind-prev-button');
@@ -138,7 +199,10 @@ var BFThumbnailService = {
 	},
 	initButton : function(aButton)
 	{
-		if (!aButton ||
+		if (!aButton)
+			return;
+
+		if (typeof aButton == 'string' &&
 			!(aButton = document.getElementById(aButton)))
 			return;
 
@@ -190,17 +254,40 @@ var BFThumbnailService = {
  
 	destroyButtons : function() 
 	{
-		this.destroyButtons('back-button');
-		this.destroyButtons('forward-button');
+		var backButton = this.evaluateXPath(
+				'/descendant::xul:toolbar/xul:toolbarbutton[@id="back-button"]',
+				document,
+				XPathResult.FIRST_ORDERED_NODE_TYPE
+			).singleNodeValue;
+		var forwardButton = this.evaluateXPath(
+				'/descendant::xul:toolbar/xul:toolbarbutton[@id="forward-button"]',
+				document,
+				XPathResult.FIRST_ORDERED_NODE_TYPE
+			).singleNodeValue;
 
-		this.destroyButtons('rewind-button');
-		this.destroyButtons('rewind-prev-button');
-		this.destroyButtons('fastforward-button');
-		this.destroyButtons('fastforward-next-button');
+		if (backButton.getAttribute('unified') == 'full') {
+			backButton = document.getAnonymousElementByAttribute(backButton, 'id', 'back-button');
+			forwardButton = document.getAnonymousElementByAttribute(backButton, 'id', 'forward-button');
+		}
+		else if (forwardButton.getAttribute('unified') == 'full') {
+			backButton = document.getAnonymousElementByAttribute(forwardButton, 'id', 'back-button');
+			forwardButton = document.getAnonymousElementByAttribute(forwardButton, 'id', 'forward-button');
+		}
+
+		this.destroyButton(backButton);
+		this.destroyButton(forwardButton);
+
+		this.destroyButton('rewind-button');
+		this.destroyButton('rewind-prev-button');
+		this.destroyButton('fastforward-button');
+		this.destroyButton('fastforward-next-button');
 	},
-	destroyButtons : function(aButton)
+	destroyButton : function(aButton)
 	{
-		if (!aButton ||
+		if (!aButton)
+			return;
+
+		if (typeof aButton == 'string' &&
 			!(aButton = document.getElementById(aButton)))
 			return;
 
