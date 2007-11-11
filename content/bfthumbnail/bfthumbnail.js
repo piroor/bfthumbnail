@@ -7,9 +7,14 @@ var BFThumbnailService = {
 
 	kDATABASE  : 'bfthumbnail.sqlite',
 	kTABLE     : 'thumbnails',
+
 	kKEY       : 'key',
 	kTHUMBNAIL : 'thumbnail',
 	kDATE      : 'last_updated_on',
+
+	kKEY_INDEX       : 0,
+	kTHUMBNAIL_INDEX : 1,
+	kDATE_INDEX      : 2,
 
 	shown : false,
 
@@ -47,10 +52,10 @@ var BFThumbnailService = {
 		return document.getElementById('bfthumbnail-tooltip-uri');
 	},
  
-	lastTarget : null,
+	lastTarget : null, 
   
 /* utilities */ 
-	 
+	
 	NSResolver : { 
 		lookupNamespaceURI : function(aPrefix)
 		{
@@ -103,7 +108,7 @@ var BFThumbnailService = {
 	},
   
 /* Initializing */ 
-	 
+	
 	init : function() 
 	{
 		if (!('gBrowser' in window)) return;
@@ -141,7 +146,7 @@ var BFThumbnailService = {
 
 		this.initialized = true;
 	},
-	 
+	
 	initTabBrowser : function(aTabBrowser) 
 	{
 		aTabBrowser.addEventListener('TabOpen',  this, false);
@@ -228,7 +233,7 @@ var BFThumbnailService = {
 
 		this.removePrefListener(this);
 	},
-	 
+	
 	destroyTabBrowser : function(aTabBrowser) 
 	{
 		aTabBrowser.removeEventListener('TabOpen',  this, false);
@@ -311,7 +316,7 @@ var BFThumbnailService = {
 			aButton.__bfthumbnail__thumbnail = false;
 		}
 	},
- 	   
+    
 /* thumbnail */ 
 	 
 	createThumbnail : function(aTab, aTabBrowser, aThis, aImage) 
@@ -544,7 +549,7 @@ var BFThumbnailService = {
 
 			if(!this._thumbnails.tableExists(this.kTABLE)){
 				this._thumbnails.createTable(this.kTABLE,
-					this.kKEY+' TEXT PRIMARY KEY, '+this.kTHUMBNAIL+' TEXT, '+this.kDATE);
+					this.kKEY+' TEXT PRIMARY KEY, '+this.kTHUMBNAIL+' TEXT, '+this.kDATE+' DATETIME');
 			}
 		}
 		return this._thumbnails;
@@ -554,9 +559,9 @@ var BFThumbnailService = {
 	saveThumbnail : function(aURI, aThumbnailURI) 
 	{
 		var statement = this.thumbnails.createStatement('INSERT OR REPLACE INTO '+this.kTABLE+' VALUES(?1, ?2, ?3)');
-		statement.bindStringParameter(0, aURI);
-		statement.bindStringParameter(1, aThumbnailURI);
-		statement.bindDoubleParameter(2, Date.now());
+		statement.bindStringParameter(this.kKEY_INDEX, aURI);
+		statement.bindStringParameter(this.kTHUMBNAIL_INDEX, aThumbnailURI);
+		statement.bindDoubleParameter(this.kDATE_INDEX, Date.now());
 		try {
 			statement.executeStep();
 		}
@@ -572,7 +577,7 @@ var BFThumbnailService = {
 		statement.bindStringParameter(0, aURI);
 		statement.executeStep();
 		try {
-			return statement.getString(1);
+			return statement.getString(this.kTHUMBNAIL_INDEX);
 		}
 		catch(e) { // there is no thumbnail for the page
 			return '';
@@ -581,17 +586,23 @@ var BFThumbnailService = {
  
 	updateDB : function() 
 	{
-		var statement = this.thumbnails.createStatement('DELETE FROM '+this.kTABLE+' WHERE '+this.kDATE+' < ?1');
 		var days = this.getPref('extensions.bfthumbnail.expire.days');
 		if (days < 0) return;
 
+		var statement = this.thumbnails.createStatement('DELETE FROM '+this.kTABLE+' WHERE '+this.kDATE+' < ?1');
 		statement.bindDoubleParameter(0, Date.now() - (1000 * 60 * 60 * 24 * days));
 		try {
-			statement.executeStep();
+			while (statement.executeStep()) {}
 		}
 		catch(e) {
 			dump('updateDB\n'+e+'\n');
 		}
+	},
+ 	
+	getAllThumbnails : function(aDir) 
+	{
+		var statement = this.thumbnails.createStatement('SELECT * FROM '+this.kTABLE+' ORDER BY '+this.kDATE+' '+(aDir && aDir > 0 ? 'ASC' : 'DESC' ));
+		return statement;
 	},
   
 /* Event Handling */ 
