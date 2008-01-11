@@ -568,6 +568,7 @@ var BFThumbnailService = {
 		catch(e) {
 			dump('saveThumbnail\n'+e+'\n');
 		}
+		statement.reset();
 		this.updateDB();
 	},
  
@@ -576,12 +577,15 @@ var BFThumbnailService = {
 		var statement = this.thumbnails.createStatement('SELECT * FROM '+this.kTABLE+' WHERE '+this.kKEY+' = ?1');
 		statement.bindStringParameter(0, aURI);
 		statement.executeStep();
+		var thumbnail;
 		try {
-			return statement.getString(this.kTHUMBNAIL_INDEX);
+			thumbnail = statement.getString(this.kTHUMBNAIL_INDEX);
 		}
 		catch(e) { // there is no thumbnail for the page
-			return '';
+			thumbnail = '';
 		}
+		statement.reset();
+		return thumbnail;
 	},
  
 	updateDB : function() 
@@ -597,6 +601,7 @@ var BFThumbnailService = {
 		catch(e) {
 			dump('updateDB\n'+e+'\n');
 		}
+		statement.reset();
 	},
  	
 	getAllThumbnails : function(aDir) 
