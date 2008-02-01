@@ -7,7 +7,7 @@
                    em:name="Back/Forward Thumbnail"
                    em:version="0.1.2008011801"
                    em:creator="SHIMODA Hiroshi"
-                   em:description=""
+                   em:description="Provides thumbnail for tooltips on &quot;Back&quot; and &quot;Forward&quot; buttons."
                    em:homepageURL="http://piro.sakura.ne.jp/xul/bfthumbnail/"
                    em:optionsURL="chrome://bfthumbnail/content/config.xul">
 <!--
@@ -34,7 +34,7 @@
       <!-- Firefox -->
       <RDF:Description em:id="{ec8030f7-c20a-464f-9b0e-13a3a9e97384}"
                        em:minVersion="2.0"
-                       em:maxVersion="3.0b1" />
+                       em:maxVersion="3.0b3" />
     </em:targetApplication>
   </RDF:Description>
 </RDF:RDF>

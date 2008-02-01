@@ -125,7 +125,8 @@ var BFThumbnailService = {
 			);
 		}
 
-		var toolbox = document.getElementById('navigator-toolbox');
+		var toolbox = document.getElementById('browser-toolbox') || // Firefox 3
+					document.getElementById('navigator-toolbox'); // Firefox 2
 		if (toolbox.customizeDone) {
 			toolbox.__bfthumbnail__customizeDone = toolbox.customizeDone;
 			toolbox.customizeDone = function(aChanged) {
@@ -180,11 +181,13 @@ var BFThumbnailService = {
 		this.lastTarget = null;
 
 		var backButton = this.evaluateXPath(
+				'/descendant::xul:toolbaritem[@id="unified-back-forward-button"]/xul:toolbarbutton[@id="back-button"] | ' +
 				'/descendant::xul:toolbar/xul:toolbarbutton[@id="back-button"]',
 				document,
 				XPathResult.FIRST_ORDERED_NODE_TYPE
 			).singleNodeValue;
 		var forwardButton = this.evaluateXPath(
+				'/descendant::xul:toolbaritem[@id="unified-back-forward-button"]/xul:toolbarbutton[@id="forward-button"] | ' +
 				'/descendant::xul:toolbar/xul:toolbarbutton[@id="forward-button"]',
 				document,
 				XPathResult.FIRST_ORDERED_NODE_TYPE
@@ -268,11 +271,13 @@ var BFThumbnailService = {
 		this.lastTarget = null;
 
 		var backButton = this.evaluateXPath(
+				'/descendant::xul:toolbaritem[@id="unified-back-forward-button"]/xul:toolbarbutton[@id="back-button"] | ' +
 				'/descendant::xul:toolbar/xul:toolbarbutton[@id="back-button"]',
 				document,
 				XPathResult.FIRST_ORDERED_NODE_TYPE
 			).singleNodeValue;
 		var forwardButton = this.evaluateXPath(
+				'/descendant::xul:toolbaritem[@id="unified-back-forward-button"]/xul:toolbarbutton[@id="forward-button"] | ' +
 				'/descendant::xul:toolbar/xul:toolbarbutton[@id="forward-button"]',
 				document,
 				XPathResult.FIRST_ORDERED_NODE_TYPE
