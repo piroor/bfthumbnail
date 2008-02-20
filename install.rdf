@@ -5,7 +5,7 @@
   <RDF:Description RDF:about="urn:mozilla:install-manifest"
                    em:id="bfthumbnail@piro.sakura.ne.jp"
                    em:name="Back/Forward Thumbnail"
-                   em:version="0.1.2008011801"
+                   em:version="0.1.2008022001"
                    em:creator="SHIMODA Hiroshi"
                    em:description="Provides thumbnail for tooltips on &quot;Back&quot; and &quot;Forward&quot; buttons."
                    em:homepageURL="http://piro.sakura.ne.jp/xul/bfthumbnail/"
