@@ -179,7 +179,7 @@ var BFThumbnailService = {
 				'{ BFThumbnailService.destroyTab(aOurTab);'
 			).replace(
 				'if (tabCount == 1)',
-				'BFThumbnailService.initTab(aOurTab) $&'
+				'BFThumbnailService.initTab(aOurTab); $&'
 			));
 		}
 	},
