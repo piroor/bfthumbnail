@@ -55,7 +55,7 @@ var BFThumbnailService = {
 	lastTarget : null, 
   
 /* utilities */ 
-	
+	 
 	NSResolver : { 
 		lookupNamespaceURI : function(aPrefix)
 		{
@@ -106,7 +106,19 @@ var BFThumbnailService = {
 				XPathResult.FIRST_ORDERED_NODE_TYPE
 			).singleNodeValue;
 	},
-  
+ 
+	getTabBrowserFromChild : function(aNode) 
+	{
+		if (!aNode) return null;
+		return aNode.ownerDocument.evaluate(
+				'ancestor-or-self::*[local-name()="tabbrowser"]',
+				aNode,
+				null,
+				XPathResult.FIRST_ORDERED_NODE_TYPE,
+				null
+			).singleNodeValue;
+	},
+ 	 
 /* Initializing */ 
 	
 	init : function() 
@@ -160,12 +172,23 @@ var BFThumbnailService = {
 		delete i;
 		delete maxi;
 		delete tabs;
+
+		if ('swapBrowsersAndCloseOther' in aTabBrowser) {
+			eval('aTabBrowser.swapBrowsersAndCloseOther = '+aTabBrowser.swapBrowsersAndCloseOther.toSource().replace(
+				'{',
+				'{ BFThumbnailService.destroyTab(aOurTab);'
+			).replace(
+				'if (tabCount == 1)',
+				'BFThumbnailService.initTab(aOurTab) $&'
+			));
+		}
 	},
  
 	initTab : function(aTab, aTabBrowser) 
 	{
 		if (aTab.__thumbnailsaver__progressListener) return;
 
+		if (!aTabBrowser) aTabBrowser = this.getTabBrowserFromChild(aTab);
 		aTab.__thumbnailsaver__parentTabBrowser = aTabBrowser;
 
 		var filter = Components.classes['@mozilla.org/appshell/component/browser-status-filter;1'].createInstance(Components.interfaces.nsIWebProgress);
@@ -323,7 +346,7 @@ var BFThumbnailService = {
 	},
     
 /* thumbnail */ 
-	 
+	
 	createThumbnail : function(aTab, aTabBrowser, aThis, aImage) 
 	{
 		if (!aThis) aThis = this;
@@ -541,7 +564,7 @@ var BFThumbnailService = {
 	},
   
 /* Database */ 
-	 
+	
 	get thumbnails() 
 	{
 		if (!this._thumbnails) {
@@ -608,7 +631,7 @@ var BFThumbnailService = {
 		}
 		statement.reset();
 	},
- 	
+ 
 	getAllThumbnails : function(aDir) 
 	{
 		var statement = this.thumbnails.createStatement('SELECT * FROM '+this.kTABLE+' ORDER BY '+this.kDATE+' '+(aDir && aDir > 0 ? 'ASC' : 'DESC' ));
