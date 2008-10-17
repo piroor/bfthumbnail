@@ -78,9 +78,9 @@ var BFThumbnailService = {
 	{
 		if (!aType) aType = XPathResult.ORDERED_NODE_SNAPSHOT_TYPE;
 		try {
-			var xpathResult = document.evaluate(
+			var xpathResult = (aContext.ownerDocument || aContext || document).evaluate(
 					aExpression,
-					aContext,
+					aContext || document,
 					this.NSResolver,
 					aType,
 					null
@@ -109,13 +109,10 @@ var BFThumbnailService = {
  
 	getTabBrowserFromChild : function(aNode) 
 	{
-		if (!aNode) return null;
-		return aNode.ownerDocument.evaluate(
-				'ancestor-or-self::*[local-name()="tabbrowser"]',
+		return this.evaluateXPath(
+				'ancestor-or-self::xul:tabbrowser',
 				aNode,
-				null,
-				XPathResult.FIRST_ORDERED_NODE_TYPE,
-				null
+				XPathResult.FIRST_ORDERED_NODE_TYPE
 			).singleNodeValue;
 	},
  	 
