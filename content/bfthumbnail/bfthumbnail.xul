@@ -22,11 +22,13 @@
 -->
 		<vbox flex="1">
 			<label id="bfthumbnail-tooltip-label" crop="end"/>
-			<label id="bfthumbnail-tooltip-title" crop="end"/>
-			<hbox id="bfthumbnail-tooltip-thumbnail-container">
-				<image id="bfthumbnail-tooltip-thumbnail"/>
-			</hbox>
-			<label id="bfthumbnail-tooltip-uri" crop="end"/>
+			<vbox flex="1" id="bfthumbnail-tooltip-contents">
+				<label id="bfthumbnail-tooltip-title" crop="end"/>
+				<hbox id="bfthumbnail-tooltip-thumbnail-container">
+					<image id="bfthumbnail-tooltip-thumbnail"/>
+				</hbox>
+				<label id="bfthumbnail-tooltip-uri" crop="end"/>
+			</vbox>
 		</vbox>
 	</tooltip>
 </popupset>

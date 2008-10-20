@@ -7,9 +7,12 @@
 
 #bfthumbnail-tooltip-label {
 	font-weight: bold;
-	padding-bottom: 0.3em;
-	border-bottom: 1px solid;
-	margin-bottom: 0.3em;
+}
+
+#bfthumbnail-tooltip-contents {
+	padding-top: 0.3em;
+	border-top: 1px solid;
+	margin-top: 0.3em;
 }
 
 #bfthumbnail-tooltip-thumbnail-container {

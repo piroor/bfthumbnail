@@ -1,7 +1,11 @@
 @namespace url("http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul");
 
 #bfthumbnail-tooltip-title[value=""],
+#bfthumbnail-tooltip-thumbnail[src=""],
 #bfthumbnail-tooltip-uri[value=""],
-#bfthumbnail-tooltip-thumbnail[src=""] {
+#bfthumbnail-tooltip-contents:not([show-title="true"]) > #bfthumbnail-tooltip-title,
+#bfthumbnail-tooltip-contents:not([show-thumbnail="true"]) > #bfthumbnail-tooltip-thumbnail-container,
+#bfthumbnail-tooltip-contents:not([show-uri="true"]) > #bfthumbnail-tooltip-uri,
+#bfthumbnail-tooltip-contents:not([show-title="true"]):not([show-thumbnail="true"]):not([show-uri="true"]) {
 	visibility: collapse;
 }

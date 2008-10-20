@@ -2,6 +2,14 @@
 
 <!ENTITY config.tabs.general "全般">
 
+<!ENTITY config.show.caption    "ツールチップの内容:">
+<!ENTITY config.show.title      "タイトル">
+<!ENTITY config.show.thumbnail  "サムネイル">
+<!ENTITY config.show.uri        "URI">
+
+<!ENTITY config.autohide.before "">
+<!ENTITY config.autohide.after  "ミリ秒後にツールチップを閉じる">
+
 <!ENTITY config.size-before "サムネイルの表示サイズ:">
 <!ENTITY config.size-after  "ピクセル">
 

@@ -2,6 +2,14 @@
 
 <!ENTITY config.tabs.general "General">
 
+<!ENTITY config.show.caption    "Show in tooltip:">
+<!ENTITY config.show.title      "Title">
+<!ENTITY config.show.thumbnail  "Thumbnail">
+<!ENTITY config.show.uri        "URI">
+
+<!ENTITY config.autohide.before "Auto-hide tooltip after">
+<!ENTITY config.autohide.after  "msec.">
+
 <!ENTITY config.size-before "Thumbnail size:">
 <!ENTITY config.size-after  "pixel">
 

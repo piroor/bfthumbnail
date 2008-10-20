@@ -18,6 +18,9 @@ var BFThumbnailService = {
 
 	shown : false,
 
+	size : 100,
+	expireDays : 10,
+	autoHideDelay : 5000,
 	 
 /* references */ 
 	 
@@ -34,6 +37,10 @@ var BFThumbnailService = {
 	get tooltip() 
 	{
 		return document.getElementById('bfthumbnail-tooltip');
+	},
+	get tooltipContents()
+	{
+		return document.getElementById('bfthumbnail-tooltip-contents');
 	},
 	get tooltipLabel()
 	{
@@ -115,9 +122,9 @@ var BFThumbnailService = {
 				XPathResult.FIRST_ORDERED_NODE_TYPE
 			).singleNodeValue;
 	},
- 	 
+  
 /* Initializing */ 
-	
+	 
 	init : function() 
 	{
 		if (!('gBrowser' in window)) return;
@@ -153,6 +160,14 @@ var BFThumbnailService = {
 
 		this.initTabBrowser(gBrowser);
 		this.initButtons();
+
+		this.addPrefListener(this);
+		this.observe(null, 'nsPref:changed', 'extensions.bfthumbnail.show.title');
+		this.observe(null, 'nsPref:changed', 'extensions.bfthumbnail.show.thumbnail');
+		this.observe(null, 'nsPref:changed', 'extensions.bfthumbnail.show.uri');
+		this.observe(null, 'nsPref:changed', 'extensions.bfthumbnail.size');
+		this.observe(null, 'nsPref:changed', 'extensions.bfthumbnail.expire.days');
+		this.observe(null, 'nsPref:changed', 'extensions.bfthumbnail.autoHideDelay');
 
 		this.initialized = true;
 	},
@@ -230,7 +245,7 @@ var BFThumbnailService = {
 		this.initButton('fastforward-button');
 		this.initButton('fastforward-next-button');
 	},
-	 
+	
 	initButton : function(aButton) 
 	{
 		if (!aButton)
@@ -246,7 +261,7 @@ var BFThumbnailService = {
 			aButton.__bfthumbnail__thumbnail = true;
 		}
 	},
-   
+   	
 	destroy : function() 
 	{
 		this.destroyTabBrowser(gBrowser);
@@ -343,7 +358,7 @@ var BFThumbnailService = {
 	},
     
 /* thumbnail */ 
-	
+	 
 	createThumbnail : function(aTab, aTabBrowser, aThis, aImage) 
 	{
 		if (!aThis) aThis = this;
@@ -356,9 +371,8 @@ var BFThumbnailService = {
 		var h   = win.innerHeight;
 		var aspectRatio = 1 / 0.75;
 
-		var size = aThis.getPref('extensions.bfthumbnail.size');
-		var canvasW = Math.floor((aspectRatio < 1) ? (size * aspectRatio) : size );
-		var canvasH = Math.floor((aspectRatio > 1) ? (size / aspectRatio) : size );
+		var canvasW = Math.floor((aspectRatio < 1) ? (aThis.size * aspectRatio) : aThis.size );
+		var canvasH = Math.floor((aspectRatio > 1) ? (aThis.size / aspectRatio) : aThis.size );
 
 		var isImage = b.contentDocument.contentType.indexOf('image') == 0;
 
@@ -536,7 +550,7 @@ var BFThumbnailService = {
 		else
 			this.tooltip.showPopup(aNode, -1, -1, 'tooltip', 'bottomleft', 'topleft');
 
-		this.delayedHide(aNode, this.getPref('extensions.bfthumbnail.autoHideDelay'));
+		this.delayedHide(aNode, this.autoHideDelay);
 	},
  
 	hide : function(aNode) 
@@ -561,7 +575,7 @@ var BFThumbnailService = {
 	},
   
 /* Database */ 
-	
+	 
 	get thumbnails() 
 	{
 		if (!this._thumbnails) {
@@ -615,11 +629,10 @@ var BFThumbnailService = {
  
 	updateDB : function() 
 	{
-		var days = this.getPref('extensions.bfthumbnail.expire.days');
-		if (days < 0) return;
+		if (this.expireDays < 0) return;
 
 		var statement = this.thumbnails.createStatement('DELETE FROM '+this.kTABLE+' WHERE '+this.kDATE+' < ?1');
-		statement.bindDoubleParameter(0, Date.now() - (1000 * 60 * 60 * 24 * days));
+		statement.bindDoubleParameter(0, Date.now() - (1000 * 60 * 60 * 24 * this.expireDays));
 		try {
 			while (statement.executeStep()) {}
 		}
@@ -672,6 +685,55 @@ var BFThumbnailService = {
 				var button = this.getButtonFromEvent(aEvent);
 				if (button.getAttribute('disabled') == 'true') return;
 				this.delayedHide(button);
+				break;
+		}
+	},
+ 
+	domain  : 'extensions.bfthumbnail', 
+	observe : function(aSubject, aTopic, aPrefName)
+	{
+		switch (aTopic)
+		{
+			case 'nsPref:changed':
+				var value = this.getPref(aPrefName);
+				switch (aPrefName)
+				{
+					case 'extensions.bfthumbnail.show.title':
+						if (value)
+							this.tooltipContents.setAttribute('show-title', true);
+						else
+							this.tooltipContents.removeAttribute('show-title');
+						break;
+
+					case 'extensions.bfthumbnail.show.thumbnail':
+						if (value)
+							this.tooltipContents.setAttribute('show-thumbnail', true);
+						else
+							this.tooltipContents.removeAttribute('show-thumbnail');
+						break;
+
+					case 'extensions.bfthumbnail.show.uri':
+						if (value)
+							this.tooltipContents.setAttribute('show-uri', true);
+						else
+							this.tooltipContents.removeAttribute('show-uri');
+						break;
+
+					case 'extensions.bfthumbnail.size':
+						this.size = value;
+						break;
+
+					case 'extensions.bfthumbnail.expire.days':
+						this.expireDays = value;
+						break;
+
+					case 'extensions.bfthumbnail.autoHideDelay':
+						this.autoHideDelay = value;
+						break;
+
+					default:
+						break;
+				}
 				break;
 		}
 	},

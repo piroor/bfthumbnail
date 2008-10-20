@@ -17,6 +17,20 @@
 		<preference id="extensions.bfthumbnail.expire.days"
 			name="extensions.bfthumbnail.expire.days"
 			type="int"/>
+
+		<preference id="extensions.bfthumbnail.autoHideDelay"
+			name="extensions.bfthumbnail.autoHideDelay"
+			type="int"/>
+
+		<preference id="extensions.bfthumbnail.show.title"
+			name="extensions.bfthumbnail.show.title"
+			type="bool"/>
+		<preference id="extensions.bfthumbnail.show.thumbnail"
+			name="extensions.bfthumbnail.show.thumbnail"
+			type="bool"/>
+		<preference id="extensions.bfthumbnail.show.uri"
+			name="extensions.bfthumbnail.show.uri"
+			type="bool"/>
 	</preferences>
 
 <!--
@@ -25,6 +39,29 @@
 		label="&config.thumbnail.enabled;"/>
 -->
 
+	<groupbox>
+		<caption label="&config.show.caption;"/>
+		<hbox align="center">
+			<checkbox label="&config.show.title;"
+				preference="extensions.bfthumbnail.show.title"/>
+			<checkbox label="&config.show.thumbnail;"
+				preference="extensions.bfthumbnail.show.thumbnail"/>
+			<checkbox label="&config.show.uri;"
+				preference="extensions.bfthumbnail.show.uri"/>
+		</hbox>
+	</groupbox>
+	<separator class="thin"/>
+	<hbox align="center">
+		<label value="&config.autohide.before;"
+			control="extensions.bfthumbnail.autoHideDelay-textbox"/>
+		<textbox id="extensions.bfthumbnail.autoHideDelay-textbox"
+			preference="extensions.bfthumbnail.autoHideDelay"
+			type="number"
+			min="1000" increment="500" style="width:4em;"/>
+		<label value="&config.autohide.after;"
+			control="extensions.bfthumbnail.autoHideDelay-textbox"/>
+	</hbox>
+	<separator class="thin"/>
 	<hbox align="center">
 		<label value="&config.size-before;"
 			control="extensions.bfthumbnail.size-textbox"/>
@@ -35,7 +72,7 @@
 		<label value="&config.size-after;"
 			control="extensions.bfthumbnail.size-textbox"/>
 	</hbox>
-
+	<separator class="thin"/>
 	<hbox align="center">
 		<label value="&config.expire.days-before;"
 			control="extensions.bfthumbnail.expire.days-textbox"/>
