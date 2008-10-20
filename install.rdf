@@ -13,6 +13,7 @@
 <!--
                    em:iconURL=""
 -->
+    <em:contributor>Mikes Kaszmán István (hu-HU locale)</em:contributor>
 
 
     <em:updateURL>http://piro.sakura.ne.jp/xul/update.rdf</em:updateURL>
@@ -23,13 +24,19 @@
       <RDF:Description em:locale="en-US"
                        em:name="Back/Forward Thumbnail"
                        em:description="Provides thumbnail for tooltips on &quot;Back&quot; and &quot;Forward&quot; buttons."
-                       em:homepageURL="http://piro.sakura.ne.jp/xul/_bfthumbnail.html.en"/>
+                       em:homepageURL="http://piro.sakura.ne.jp/xul/_bfthumbnail.html.en"
+                       em:creator="SHIMODA Hiroshi">
+		<em:contributor>Mikes Kaszmán István (hu-HU locale)</em:contributor>
+      </RDF:Description>
     </em:localized>
     <em:localized>
       <RDF:Description em:locale="ja"
                        em:name="戻る/進むサムネイル"
                        em:description="「戻る」「進む」ボタンのツールチップにそのページの縮小画像を表示します。"
-                       em:homepageURL="http://piro.sakura.ne.jp/xul/_bfthumbnail.html"/>
+                       em:homepageURL="http://piro.sakura.ne.jp/xul/_bfthumbnail.html"
+                       em:creator="SHIMODA Hiroshi">
+		<em:contributor>Mikes Kaszmán István (hu-HU locale)</em:contributor>
+      </RDF:Description>
     </em:localized>
 
     <em:targetApplication>

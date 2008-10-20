@@ -1,0 +1,9 @@
+<!ENTITY config.title        "Back/Forward Thumbnail - beállítások">
+
+<!ENTITY config.tabs.general "Általános">
+
+<!ENTITY config.size-before "A megjelenített gyorsnézet mérete:">
+<!ENTITY config.size-after  "képpont">
+
+<!ENTITY config.expire.days-before "Oldalak gyorsnézetének törlése">
+<!ENTITY config.expire.days-after  "nap után (-1=nincs törlés).">
