@@ -270,6 +270,10 @@ var BFThumbnailService = {
 		window.removeEventListener('unload', this, false);
 
 		this.removePrefListener(this);
+
+		this.saveThumbnailStatement.finalize();
+		this.loadThumbnailStatement.finalize();
+		this.updateDBStatement.finalize();
 	},
 	
 	destroyTabBrowser : function(aTabBrowser) 
@@ -597,7 +601,7 @@ var BFThumbnailService = {
  
 	saveThumbnail : function(aURI, aThumbnailURI) 
 	{
-		var statement = this.thumbnails.createStatement('INSERT OR REPLACE INTO '+this.kTABLE+' VALUES(?1, ?2, ?3)');
+		var statement = this.saveThumbnailStatement;
 		statement.bindStringParameter(this.kKEY_INDEX, aURI);
 		statement.bindStringParameter(this.kTHUMBNAIL_INDEX, aThumbnailURI);
 		statement.bindDoubleParameter(this.kDATE_INDEX, Date.now());
@@ -610,10 +614,20 @@ var BFThumbnailService = {
 		statement.reset();
 		this.updateDB();
 	},
+	get saveThumbnailStatement()
+	{
+		if (!this._saveThumbnailStatement) {
+			this._saveThumbnailStatement = this.thumbnails.createStatement(
+					'INSERT OR REPLACE INTO '+this.kTABLE+' VALUES(?1, ?2, ?3)'
+				);
+		}
+		return this._saveThumbnailStatement;
+	},
+	_saveThumbnailStatement : null,
  
 	loadThumbnail : function(aURI) 
 	{
-		var statement = this.thumbnails.createStatement('SELECT * FROM '+this.kTABLE+' WHERE '+this.kKEY+' = ?1');
+		var statement = this.loadThumbnailStatement;
 		statement.bindStringParameter(0, aURI);
 		statement.executeStep();
 		var thumbnail;
@@ -626,12 +640,22 @@ var BFThumbnailService = {
 		statement.reset();
 		return thumbnail;
 	},
+	get loadThumbnailStatement()
+	{
+		if (!this._loadThumbnailStatement) {
+			this._loadThumbnailStatement = this.thumbnails.createStatement(
+					'SELECT * FROM '+this.kTABLE+' WHERE '+this.kKEY+' = ?1'
+				);
+		}
+		return this._loadThumbnailStatement;
+	},
+	_loadThumbnailStatement : null,
  
 	updateDB : function() 
 	{
 		if (this.expireDays < 0) return;
 
-		var statement = this.thumbnails.createStatement('DELETE FROM '+this.kTABLE+' WHERE '+this.kDATE+' < ?1');
+		var statement = this.updateDBStatement;
 		statement.bindDoubleParameter(0, Date.now() - (1000 * 60 * 60 * 24 * this.expireDays));
 		try {
 			while (statement.executeStep()) {}
@@ -641,12 +665,16 @@ var BFThumbnailService = {
 		}
 		statement.reset();
 	},
- 
-	getAllThumbnails : function(aDir) 
+	get updateDBStatement()
 	{
-		var statement = this.thumbnails.createStatement('SELECT * FROM '+this.kTABLE+' ORDER BY '+this.kDATE+' '+(aDir && aDir > 0 ? 'ASC' : 'DESC' ));
-		return statement;
+		if (!this._updateDBStatement) {
+			this._updateDBStatement = this.thumbnails.createStatement(
+					'DELETE FROM '+this.kTABLE+' WHERE '+this.kDATE+' < ?1'
+				);
+		}
+		return this._updateDBStatement;
 	},
+	_updateDBStatement : null,
   
 /* Event Handling */ 
 	 
