@@ -271,9 +271,11 @@ var BFThumbnailService = {
 
 		this.removePrefListener(this);
 
-		this.saveThumbnailStatement.finalize();
-		this.loadThumbnailStatement.finalize();
-		this.updateDBStatement.finalize();
+		for (var i in this._statements)
+		{
+			if ('finalize' in this._statements[i])
+				this._statements[i].finalize();
+		}
 	},
 	
 	destroyTabBrowser : function(aTabBrowser) 
@@ -599,9 +601,21 @@ var BFThumbnailService = {
 	},
 	_thumbnails : null,
  
+	_getStatement : function(aName, aSQL) 
+	{
+		if (!(aName in this._statements)) {
+			this._statements[aName] = this.thumbnails.createStatement(aSQL);
+		}
+		return this._statements[aName];
+	},
+	_statements : {},
+ 
 	saveThumbnail : function(aURI, aThumbnailURI) 
 	{
-		var statement = this.saveThumbnailStatement;
+		var statement = this._getStatement(
+				'saveThumbnailStatement',
+				'INSERT OR REPLACE INTO '+this.kTABLE+' VALUES(?1, ?2, ?3)'
+			);
 		statement.bindStringParameter(this.kKEY_INDEX, aURI);
 		statement.bindStringParameter(this.kTHUMBNAIL_INDEX, aThumbnailURI);
 		statement.bindDoubleParameter(this.kDATE_INDEX, Date.now());
@@ -614,20 +628,13 @@ var BFThumbnailService = {
 		statement.reset();
 		this.updateDB();
 	},
-	get saveThumbnailStatement()
-	{
-		if (!this._saveThumbnailStatement) {
-			this._saveThumbnailStatement = this.thumbnails.createStatement(
-					'INSERT OR REPLACE INTO '+this.kTABLE+' VALUES(?1, ?2, ?3)'
-				);
-		}
-		return this._saveThumbnailStatement;
-	},
-	_saveThumbnailStatement : null,
  
 	loadThumbnail : function(aURI) 
 	{
-		var statement = this.loadThumbnailStatement;
+		var statement = this._getStatement(
+				'loadThumbnailStatement',
+				'SELECT * FROM '+this.kTABLE+' WHERE '+this.kKEY+' = ?1'
+			);
 		statement.bindStringParameter(0, aURI);
 		statement.executeStep();
 		var thumbnail;
@@ -640,22 +647,15 @@ var BFThumbnailService = {
 		statement.reset();
 		return thumbnail;
 	},
-	get loadThumbnailStatement()
-	{
-		if (!this._loadThumbnailStatement) {
-			this._loadThumbnailStatement = this.thumbnails.createStatement(
-					'SELECT * FROM '+this.kTABLE+' WHERE '+this.kKEY+' = ?1'
-				);
-		}
-		return this._loadThumbnailStatement;
-	},
-	_loadThumbnailStatement : null,
  
 	updateDB : function() 
 	{
 		if (this.expireDays < 0) return;
 
-		var statement = this.updateDBStatement;
+		var statement = this._getStatement(
+				'updateDBStatement',
+				'DELETE FROM '+this.kTABLE+' WHERE '+this.kDATE+' < ?1'
+			);
 		statement.bindDoubleParameter(0, Date.now() - (1000 * 60 * 60 * 24 * this.expireDays));
 		try {
 			while (statement.executeStep()) {}
@@ -665,16 +665,6 @@ var BFThumbnailService = {
 		}
 		statement.reset();
 	},
-	get updateDBStatement()
-	{
-		if (!this._updateDBStatement) {
-			this._updateDBStatement = this.thumbnails.createStatement(
-					'DELETE FROM '+this.kTABLE+' WHERE '+this.kDATE+' < ?1'
-				);
-		}
-		return this._updateDBStatement;
-	},
-	_updateDBStatement : null,
   
 /* Event Handling */ 
 	 
