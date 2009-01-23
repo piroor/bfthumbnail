@@ -122,6 +122,14 @@ var BFThumbnailService = {
 				XPathResult.FIRST_ORDERED_NODE_TYPE
 			).singleNodeValue;
 	},
+ 
+	getTabs : function(aTabBrowser) 
+	{
+		return this.evaluateXPath(
+				'descendant::xul:tab',
+				aTabBrowser.mTabContainer
+			);
+	},
   
 /* Initializing */ 
 	 
@@ -176,10 +184,10 @@ var BFThumbnailService = {
 	{
 		aTabBrowser.addEventListener('TabOpen',  this, false);
 		aTabBrowser.addEventListener('TabClose', this, false);
-		var tabs = aTabBrowser.mTabContainer.childNodes;
-		for (var i = 0, maxi = tabs.length; i < maxi; i++)
+		var tabs = this.getTabs(aTabBrowser);
+		for (var i = 0, maxi = tabs.snapshotLength; i < maxi; i++)
 		{
-			this.initTab(tabs[i], aTabBrowser);
+			this.initTab(tabs.snapshotItem(i), aTabBrowser);
 		}
 		delete i;
 		delete maxi;
@@ -282,10 +290,10 @@ var BFThumbnailService = {
 	{
 		aTabBrowser.removeEventListener('TabOpen',  this, false);
 		aTabBrowser.removeEventListener('TabClose', this, false);
-		var tabs = aTabBrowser.mTabContainer.childNodes;
-		for (var i = 0, maxi = tabs.length; i < maxi; i++)
+		var tabs = this.getTabs(aTabBrowser);
+		for (var i = 0, maxi = tabs.snapshotLength; i < maxi; i++)
 		{
-			this.destroyTab(tabs[i]);
+			this.destroyTab(tabs.snapshotItem(i));
 		}
 	},
  
