@@ -373,7 +373,7 @@ var BFThumbnailService = {
     
 /* thumbnail */ 
 	 
-	createThumbnail : function(aTab, aTabBrowser, aThis, aImage) 
+	createThumbnail : function(aTab, aTabBrowser, aThis) 
 	{
 		if (!aThis) aThis = this;
 
@@ -401,63 +401,40 @@ var BFThumbnailService = {
 		try {
 			var ctx = canvas.getContext('2d');
 			ctx.clearRect(0, 0, canvasW, canvasH);
+			ctx.save();
 			if (!isImage) {
-				ctx.save();
 				if (h * canvasW/w < canvasH)
 					ctx.scale(canvasH/h, canvasH/h);
 				else
 					ctx.scale(canvasW/w, canvasW/w);
 				ctx.drawWindow(win, 0/*win.scrollX*/, 0/*win.scrollY*/, w, h, aThis.thumbnailBG);
-				ctx.restore();
-				rendered = true;
 			}
 			else {
-				if (aImage && aImage instanceof Image) {
-					ctx.fillStyle = aThis.thumbnailBG;
-					ctx.fillRect(0, 0, canvasW, canvasH);
-					var iW = parseInt(aImage.width);
-					var iH = parseInt(aImage.height);
-					var x = 0;
-					var y = 0;
-					ctx.save();
-					if ((iW / iH) < 1) {
-						iW = iW * canvasH / iH;
-						x = Math.floor((canvasW - iW) / 2 );
-						iH = canvasH;
-					}
-					else {
-						iH = iH * canvasW / iW;
-						y = Math.floor((canvasH - iH) / 2 );
-						iW = canvasW;
-					}
-					ctx.drawImage(aImage, x, y, iW, iH);
-					ctx.restore();
-					rendered = true;
+				var image = b.contentDocument.getElementsByTagName('img')[0];
+				ctx.fillStyle = aThis.thumbnailBG;
+				ctx.fillRect(0, 0, canvasW, canvasH);
+				var iW = parseInt(image.width);
+				var iH = parseInt(image.height);
+				var x = 0;
+				var y = 0;
+				if ((iW / iH) < 1) {
+					iW = iW * canvasH / iH;
+					x = Math.floor((canvasW - iW) / 2 );
+					iH = canvasH;
 				}
 				else {
-					var img = new Image();
-					img.src = b.currentURI.spec;
-					var self = arguments.callee;
-					img.addEventListener('load', function() {
-						img.removeEventListener('load', arguments.callee, false);
-						self(aTab, aTabBrowser, aThis, img);
-						delete self;
-						delete img;
-						delete canvas;
-						delete ctx;
-						delete b;
-						delete win;
-					}, false);
-					return;
+					iH = iH * canvasW / iW;
+					y = Math.floor((canvasH - iH) / 2 );
+					iW = canvasW;
 				}
+				ctx.drawImage(image, x, y, iW, iH);
 			}
+			ctx.restore();
 		}
 		catch(e) {
 		}
 
-		if (rendered) {
-			aThis.saveThumbnail((aImage ? aImage.src : win.location.href ), canvas.toDataURL());
-		}
+		aThis.saveThumbnail((aImage ? aImage.src : win.location.href ), canvas.toDataURL());
 	},
  
 	fillInTooltip : function() 
