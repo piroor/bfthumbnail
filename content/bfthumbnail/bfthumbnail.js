@@ -198,8 +198,8 @@ var BFThumbnailService = {
 				'{',
 				'{ BFThumbnailService.destroyTab(aOurTab);'
 			).replace(
-				/(if \((?:tabCount == 1|aOurTab == this.selectedTab)\))/,
-				'BFThumbnailService.initTab(aOurTab); $1'
+				'if (aOurTab == this.selectedTab) {this.updateCurrentBrowser(',
+				'BFThumbnailService.initTab(aOurTab); $&'
 			));
 		}
 	},
