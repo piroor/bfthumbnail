@@ -105,10 +105,10 @@ var BFThumbnailService = {
 		return xpathResult;
 	},
  
-	getButtonFromEvent : function(aEvent) 
+	getTargetFromEvent : function(aEvent) 
 	{
 		return this.evaluateXPath(
-				'ancestor-or-self::xul:toolbarbutton[@tooltiptext or @'+this.kTOOLTIPTEXT+']',
+				'ancestor-or-self::xul:*[@tooltiptext or @'+this.kTOOLTIPTEXT+'][1]',
 				aEvent.originalTarget || aEvent.target,
 				XPathResult.FIRST_ORDERED_NODE_TYPE
 			).singleNodeValue;
@@ -211,7 +211,9 @@ var BFThumbnailService = {
 		if (!aTabBrowser) aTabBrowser = this.getTabBrowserFromChild(aTab);
 		aTab.__thumbnailsaver__parentTabBrowser = aTabBrowser;
 
-		var filter = Components.classes['@mozilla.org/appshell/component/browser-status-filter;1'].createInstance(Components.interfaces.nsIWebProgress);
+		var filter = Components
+				.classes['@mozilla.org/appshell/component/browser-status-filter;1']
+				.createInstance(Components.interfaces.nsIWebProgress);
 		var listener = new BFThumbnailProgressListener(aTab, aTabBrowser);
 		filter.addProgressListener(listener, Components.interfaces.nsIWebProgress.NOTIFY_ALL);
 		aTab.linkedBrowser.webProgress.addProgressListener(filter, Components.interfaces.nsIWebProgress.NOTIFY_ALL);
@@ -247,6 +249,11 @@ var BFThumbnailService = {
 
 		this.initButton(backButton);
 		this.initButton(forwardButton);
+		this.initButton(this.evaluateXPath(
+				'/descendant::xul:toolbarbutton[@id="back-forward-dropmarker"]/descendant::xul:menupopup',
+				document,
+				XPathResult.FIRST_ORDERED_NODE_TYPE
+			).singleNodeValue);
 
 		this.initButton('rewind-button');
 		this.initButton('rewind-prev-button');
@@ -343,6 +350,11 @@ var BFThumbnailService = {
 
 		this.destroyButton(backButton);
 		this.destroyButton(forwardButton);
+		this.destroyButton(this.evaluateXPath(
+				'/descendant::xul:toolbarbutton[@id="back-forward-dropmarker"]/descendant::xul:menupopup',
+				document,
+				XPathResult.FIRST_ORDERED_NODE_TYPE
+			).singleNodeValue);
 
 		this.destroyButton('rewind-button');
 		this.destroyButton('rewind-prev-button');
@@ -510,6 +522,16 @@ var BFThumbnailService = {
 				return true;
 
 			default:
+				if (this.evaluateXPath(
+						'ancestor::*[@id="back-forward-dropmarker"]',
+						target,
+						XPathResult.BOOLEAN_TYPE
+					).booleanValue) {
+					this.tooltipTitle.value = target.label || '';
+					this.tooltipURI.value = target.getAttribute('uri');
+					this.tooltipThumbnail.src = this.loadThumbnail(this.tooltipURI.value);
+					return true;
+				}
 				return false;
 		}
 
@@ -536,10 +558,13 @@ var BFThumbnailService = {
 
 		document.tooltipNode = this.lastTarget = aNode;
 
-		if ('openPopup' in this.tooltip) // Firefox 3
-			this.tooltip.openPopup(aNode, 'after_start', 0, 0, false, true);
-		else
+		if ('openPopup' in this.tooltip) {// Firefox 3
+			var position = aNode.localName == 'menuitem' ? 'end_after' : 'after_start' ;
+			this.tooltip.openPopup(aNode, position, 0, 0, false, false);
+		}
+		else {
 			this.tooltip.showPopup(aNode, -1, -1, 'tooltip', 'bottomleft', 'topleft');
+		}
 
 		this.delayedHide(aNode, this.autoHideDelay);
 	},
@@ -570,11 +595,15 @@ var BFThumbnailService = {
 	get thumbnails() 
 	{
 		if (!this._thumbnails) {
-			const DirectoryService = Components.classes['@mozilla.org/file/directory_service;1'].getService(Components.interfaces.nsIProperties);
+			const DirectoryService = Components
+					.classes['@mozilla.org/file/directory_service;1']
+					.getService(Components.interfaces.nsIProperties);
 			var file = DirectoryService.get('ProfD', Components.interfaces.nsIFile);
 			file.append(this.kDATABASE);
 
-			var storageService = Components.classes['@mozilla.org/storage/service;1'].getService(Components.interfaces.mozIStorageService);
+			var storageService = Components
+					.classes['@mozilla.org/storage/service;1']
+					.getService(Components.interfaces.mozIStorageService);
 			this._thumbnails = storageService.openDatabase(file);
 
 			if(!this._thumbnails.tableExists(this.kTABLE)){
@@ -674,20 +703,20 @@ var BFThumbnailService = {
 				break;
 
 			case 'mouseover':
-				var button = this.getButtonFromEvent(aEvent);
-				if (!button) return;
-				if (button.hasAttribute('tooltiptext')) {
-					button.setAttribute(this.kTOOLTIPTEXT, button.getAttribute('tooltiptext'));
-					button.removeAttribute('tooltiptext');
+				var target = this.getTargetFromEvent(aEvent);
+				if (!target) return;
+				if (target.hasAttribute('tooltiptext')) {
+					target.setAttribute(this.kTOOLTIPTEXT, target.getAttribute('tooltiptext'));
+					target.removeAttribute('tooltiptext');
 				}
-				if (button.getAttribute('disabled') == 'true') return;
-				this.show(button);
+				if (target.getAttribute('disabled') == 'true') return;
+				this.show(target);
 				break;
 
 			case 'mouseout':
-				var button = this.getButtonFromEvent(aEvent);
-				if (button.getAttribute('disabled') == 'true') return;
-				this.delayedHide(button);
+				var target = this.getTargetFromEvent(aEvent);
+				if (target.getAttribute('disabled') == 'true') return;
+				this.delayedHide(target);
 				break;
 		}
 	},
@@ -746,7 +775,9 @@ var BFThumbnailService = {
 	get Prefs() 
 	{
 		if (!this._Prefs) {
-			this._Prefs = Components.classes['@mozilla.org/preferences;1'].getService(Components.interfaces.nsIPrefBranch);
+			this._Prefs = Components
+					.classes['@mozilla.org/preferences;1']
+					.getService(Components.interfaces.nsIPrefBranch);
 		}
 		return this._Prefs;
 	},
