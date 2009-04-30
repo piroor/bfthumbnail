@@ -434,7 +434,7 @@ var BFThumbnailService = {
 		catch(e) {
 		}
 
-		aThis.saveThumbnail((aImage ? aImage.src : win.location.href ), canvas.toDataURL());
+		aThis.saveThumbnail(win.location.href, canvas.toDataURL());
 	},
  
 	fillInTooltip : function() 
