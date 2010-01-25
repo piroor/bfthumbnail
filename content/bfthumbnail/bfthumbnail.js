@@ -784,9 +784,6 @@ var BFThumbnailService = {
  
 	getPref : function(aPrefstring) 
 	{
-		if (!this.Prefs.prefHasUserValue(aPrefstring))
-			return null;
-
 		switch (this.Prefs.getPrefType(aPrefstring))
 		{
 			case this.Prefs.PREF_STRING:
@@ -795,8 +792,12 @@ var BFThumbnailService = {
 			case this.Prefs.PREF_INT:
 				return this.Prefs.getIntPref(aPrefstring);
 
-			default:
+			case this.Prefs.PREF_BOOL:
 				return this.Prefs.getBoolPref(aPrefstring);
+
+			case this.Prefs.PREF_INVALID:
+			default:
+				return null;
 		}
 	},
  
