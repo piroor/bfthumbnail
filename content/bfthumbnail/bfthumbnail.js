@@ -641,12 +641,7 @@ var BFThumbnailService = {
 				'DELETE FROM '+this.kTABLE+' WHERE '+this.kDATE+' < ?1'
 			);
 		statement.bindDoubleParameter(0, Date.now() - (1000 * 60 * 60 * 24 * this.expireDays));
-		try {
-			while (statement.executeStep()) {}
-		}
-		catch(e) {
-			dump('updateDB\n'+e+'\n');
-		}
+		while (statement.executeStep()) {}
 		statement.reset();
 	},
   
