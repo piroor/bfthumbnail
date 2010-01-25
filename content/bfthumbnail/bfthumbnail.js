@@ -622,17 +622,12 @@ var BFThumbnailService = {
 	{
 		var statement = this._getStatement(
 				'loadThumbnailStatement',
-				'SELECT * FROM '+this.kTABLE+' WHERE '+this.kKEY+' = ?1'
+				'SELECT COUNT('+this.kKEY+'), '+this.kKEY+
+				'  FROM '+this.kTABLE+' WHERE '+this.kKEY+' = ?1'
 			);
 		statement.bindStringParameter(0, aURI);
 		statement.executeStep();
-		var thumbnail;
-		try {
-			thumbnail = statement.getString(this.kTHUMBNAIL_INDEX);
-		}
-		catch(e) { // there is no thumbnail for the page
-			thumbnail = '';
-		}
+		var thumbnail = statement.getDouble(0) ? statement.getString(1) : '' ;
 		statement.reset();
 		return thumbnail;
 	},
