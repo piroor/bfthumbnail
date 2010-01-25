@@ -83,26 +83,13 @@ var BFThumbnailService = {
  
 	evaluateXPath : function(aExpression, aContext, aType) 
 	{
-		if (!aType) aType = XPathResult.ORDERED_NODE_SNAPSHOT_TYPE;
-		try {
-			var xpathResult = (aContext.ownerDocument || aContext || document).evaluate(
+		return (aContext.ownerDocument || aContext || document).evaluate(
 					aExpression,
 					aContext || document,
 					this.NSResolver,
-					aType,
+					(aType || XPathResult.ORDERED_NODE_SNAPSHOT_TYPE),
 					null
 				);
-		}
-		catch(e) {
-			return {
-				singleNodeValue : null,
-				snapshotLength  : 0,
-				snapshotItem    : function() {
-					return null
-				}
-			};
-		}
-		return xpathResult;
 	},
  
 	getTargetFromEvent : function(aEvent) 
@@ -306,20 +293,17 @@ var BFThumbnailService = {
  
 	destroyTab : function(aTab) 
 	{
-		try {
-			aTab.linkedBrowser.webProgress.removeProgressListener(aTab.__thumbnailsaver__progressFilter);
-			aTab.__thumbnailsaver__progressFilter.removeProgressListener(aTab.__thumbnailsaver__progressListener);
+		if (aTab.__thumbnailsaver__progressListener) return;
 
-			delete aTab.__thumbnailsaver__progressListener.mLabel;
-			delete aTab.__thumbnailsaver__progressListener.mTab;
-			delete aTab.__thumbnailsaver__progressListener.mTabBrowser;
+		aTab.linkedBrowser.webProgress.removeProgressListener(aTab.__thumbnailsaver__progressFilter);
+		aTab.__thumbnailsaver__progressFilter.removeProgressListener(aTab.__thumbnailsaver__progressListener);
 
-			delete aTab.__thumbnailsaver__progressFilter;
-			delete aTab.__thumbnailsaver__progressListener;
-		}
-		catch(e) {
-			dump(e+'\n');
-		}
+		delete aTab.__thumbnailsaver__progressListener.mLabel;
+		delete aTab.__thumbnailsaver__progressListener.mTab;
+		delete aTab.__thumbnailsaver__progressListener.mTabBrowser;
+
+		delete aTab.__thumbnailsaver__progressFilter;
+		delete aTab.__thumbnailsaver__progressListener;
 	},
  
 	destroyButtons : function() 
@@ -410,41 +394,37 @@ var BFThumbnailService = {
 
 		var rendered = false;
 
-		try {
-			var ctx = canvas.getContext('2d');
-			ctx.clearRect(0, 0, canvasW, canvasH);
-			ctx.save();
-			if (!isImage) {
-				if (h * canvasW/w < canvasH)
-					ctx.scale(canvasH/h, canvasH/h);
-				else
-					ctx.scale(canvasW/w, canvasW/w);
-				ctx.drawWindow(win, 0/*win.scrollX*/, 0/*win.scrollY*/, w, h, aThis.thumbnailBG);
+		var ctx = canvas.getContext('2d');
+		ctx.clearRect(0, 0, canvasW, canvasH);
+		ctx.save();
+		if (!isImage) {
+			if (h * canvasW/w < canvasH)
+				ctx.scale(canvasH/h, canvasH/h);
+			else
+				ctx.scale(canvasW/w, canvasW/w);
+			ctx.drawWindow(win, 0/*win.scrollX*/, 0/*win.scrollY*/, w, h, aThis.thumbnailBG);
+		}
+		else {
+			var image = b.contentDocument.getElementsByTagName('img')[0];
+			ctx.fillStyle = aThis.thumbnailBG;
+			ctx.fillRect(0, 0, canvasW, canvasH);
+			var iW = parseInt(image.width);
+			var iH = parseInt(image.height);
+			var x = 0;
+			var y = 0;
+			if ((iW / iH) < 1) {
+				iW = iW * canvasH / iH;
+				x = Math.floor((canvasW - iW) / 2 );
+				iH = canvasH;
 			}
 			else {
-				var image = b.contentDocument.getElementsByTagName('img')[0];
-				ctx.fillStyle = aThis.thumbnailBG;
-				ctx.fillRect(0, 0, canvasW, canvasH);
-				var iW = parseInt(image.width);
-				var iH = parseInt(image.height);
-				var x = 0;
-				var y = 0;
-				if ((iW / iH) < 1) {
-					iW = iW * canvasH / iH;
-					x = Math.floor((canvasW - iW) / 2 );
-					iH = canvasH;
-				}
-				else {
-					iH = iH * canvasW / iW;
-					y = Math.floor((canvasH - iH) / 2 );
-					iW = canvasW;
-				}
-				ctx.drawImage(image, x, y, iW, iH);
+				iH = iH * canvasW / iW;
+				y = Math.floor((canvasH - iH) / 2 );
+				iW = canvasW;
 			}
-			ctx.restore();
+			ctx.drawImage(image, x, y, iW, iH);
 		}
-		catch(e) {
-		}
+		ctx.restore();
 
 		aThis.saveThumbnail(win.location.href, canvas.toDataURL());
 	},
@@ -633,12 +613,7 @@ var BFThumbnailService = {
 		statement.bindStringParameter(this.kKEY_INDEX, aURI);
 		statement.bindStringParameter(this.kTHUMBNAIL_INDEX, aThumbnailURI);
 		statement.bindDoubleParameter(this.kDATE_INDEX, Date.now());
-		try {
-			statement.executeStep();
-		}
-		catch(e) {
-			dump('saveThumbnail\n'+e+'\n');
-		}
+		statement.executeStep();
 		statement.reset();
 		this.updateDB();
 	},
