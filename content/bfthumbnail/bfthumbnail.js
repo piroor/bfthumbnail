@@ -622,7 +622,7 @@ var BFThumbnailService = {
 	{
 		var statement = this._getStatement(
 				'loadThumbnailStatement',
-				'SELECT COUNT('+this.kKEY+'), '+this.kKEY+
+				'SELECT COUNT('+this.kKEY+'), '+this.kTHUMBNAIL+
 				'  FROM '+this.kTABLE+' WHERE '+this.kKEY+' = ?1'
 			);
 		statement.bindStringParameter(0, aURI);
