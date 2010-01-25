@@ -21,9 +21,9 @@ var BFThumbnailService = {
 	size : 100,
 	expireDays : 10,
 	autoHideDelay : 5000,
-	 
+	
 /* references */ 
-	 
+	
 	get canvas() 
 	{
 		return document.getElementById('thumbnail-saver-canvas');
@@ -62,7 +62,7 @@ var BFThumbnailService = {
 	lastTarget : null, 
   
 /* utilities */ 
-	 
+	
 	NSResolver : { 
 		lookupNamespaceURI : function(aPrefix)
 		{
@@ -132,7 +132,7 @@ var BFThumbnailService = {
 	},
   
 /* Initializing */ 
-	 
+	
 	init : function() 
 	{
 		if (!('gBrowser' in window)) return;
@@ -276,7 +276,7 @@ var BFThumbnailService = {
 			aButton.__bfthumbnail__thumbnail = true;
 		}
 	},
-   	
+   
 	destroy : function() 
 	{
 		this.destroyTabBrowser(gBrowser);
@@ -361,7 +361,7 @@ var BFThumbnailService = {
 		this.destroyButton('fastforward-button');
 		this.destroyButton('fastforward-next-button');
 	},
-	 
+	
 	destroyButton : function(aButton) 
 	{
 		if (!aButton)
@@ -384,7 +384,7 @@ var BFThumbnailService = {
 	},
     
 /* thumbnail */ 
-	 
+	
 	createThumbnail : function(aTab, aTabBrowser, aThis) 
 	{
 		if (!aThis) aThis = this;
@@ -591,7 +591,7 @@ var BFThumbnailService = {
 	},
   
 /* Database */ 
-	 
+	
 	get thumbnails() 
 	{
 		if (!this._thumbnails) {
@@ -681,7 +681,7 @@ var BFThumbnailService = {
 	},
   
 /* Event Handling */ 
-	 
+	
 	handleEvent : function(aEvent) 
 	{
 		switch (aEvent.type)
@@ -722,7 +722,8 @@ var BFThumbnailService = {
 	},
  
 	domain  : 'extensions.bfthumbnail', 
-	observe : function(aSubject, aTopic, aPrefName)
+ 
+	observe : function(aSubject, aTopic, aPrefName) 
 	{
 		switch (aTopic)
 		{
@@ -768,83 +769,10 @@ var BFThumbnailService = {
 				}
 				break;
 		}
-	},
-  
-/* Save/Load Prefs */ 
-	 
-	get Prefs() 
-	{
-		delete this.Prefs;
-		this.Prefs = Components
-						.classes['@mozilla.org/preferences;1']
-						.getService(Components.interfaces.nsIPrefBranch)
-						.QueryInterface(Components.interfaces.nsIPrefBranchInternal);
-		return this.Prefs;
-	},
- 
-	getPref : function(aPrefstring) 
-	{
-		switch (this.Prefs.getPrefType(aPrefstring))
-		{
-			case this.Prefs.PREF_STRING:
-				return decodeURIComponent(escape(this.Prefs.getCharPref(aPrefstring)));
-
-			case this.Prefs.PREF_INT:
-				return this.Prefs.getIntPref(aPrefstring);
-
-			case this.Prefs.PREF_BOOL:
-				return this.Prefs.getBoolPref(aPrefstring);
-
-			case this.Prefs.PREF_INVALID:
-			default:
-				return null;
-		}
-	},
- 
-	setPref : function(aPrefstring, aNewValue) 
-	{
-		switch (typeof aNewValue)
-		{
-			case 'string':
-				return this.Prefs.setCharPref(aPrefstring, unescape(encodeURIComponent(aNewValue)));
-
-			case 'number':
-				return this.Prefs.setIntPref(aPrefstring, parseInt(aNewValue));
-
-			default:
-				return this.Prefs.setBoolPref(aPrefstring, aNewValue);
-		}
-	},
- 
-	clearPref : function(aPrefstring) 
-	{
-		if (this.Prefs.prefHasUserValue(aPrefstring))
-			this.Prefs.clearUserPref(aPrefstring);
-	},
- 
-	addPrefListener : function(aObserver) 
-	{
-		var domains = ('domains' in aObserver) ? aObserver.domains : [aObserver.domain] ;
-		try {
-			for each (var domain in domains)
-				this.Prefs.addObserver(domain, aObserver, false);
-		}
-		catch(e) {
-		}
-	},
- 
-	removePrefListener : function(aObserver) 
-	{
-		var domains = ('domains' in aObserver) ? aObserver.domains : [aObserver.domain] ;
-		try {
-			for each (var domain in domains)
-				this.Prefs.removeObserver(domain, aObserver, false);
-		}
-		catch(e) {
-		}
 	}
    
 }; 
+BFThumbnailService.__proto__ = window['piro.sakura.ne.jp'].prefs;
 
 window.addEventListener('load', BFThumbnailService, false);
 window.addEventListener('unload', BFThumbnailService, false);
