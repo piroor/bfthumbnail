@@ -169,8 +169,8 @@ var BFThumbnailService = {
 	
 	initTabBrowser : function(aTabBrowser) 
 	{
-		aTabBrowser.addEventListener('TabOpen',  this, false);
-		aTabBrowser.addEventListener('TabClose', this, false);
+		aTabBrowser.mTabContainer.addEventListener('TabOpen',  this, false);
+		aTabBrowser.mTabContainer.addEventListener('TabClose', this, false);
 		var tabs = this.getTabs(aTabBrowser);
 		for (var i = 0, maxi = tabs.snapshotLength; i < maxi; i++)
 		{
@@ -282,8 +282,8 @@ var BFThumbnailService = {
 	
 	destroyTabBrowser : function(aTabBrowser) 
 	{
-		aTabBrowser.removeEventListener('TabOpen',  this, false);
-		aTabBrowser.removeEventListener('TabClose', this, false);
+		aTabBrowser.mTabContainer.removeEventListener('TabOpen',  this, false);
+		aTabBrowser.mTabContainer.removeEventListener('TabClose', this, false);
 		var tabs = this.getTabs(aTabBrowser);
 		for (var i = 0, maxi = tabs.snapshotLength; i < maxi; i++)
 		{
