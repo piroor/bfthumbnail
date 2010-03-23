@@ -103,11 +103,12 @@ var BFThumbnailService = {
  
 	getTabBrowserFromChild : function(aNode) 
 	{
-		return this.evaluateXPath(
-				'ancestor-or-self::xul:tabbrowser',
+		var b = this.evaluateXPath(
+				'ancestor-or-self::xul:tabbrowser | ancestor-or-self::xul:tabs[@tabbrowser]',
 				aNode,
 				XPathResult.FIRST_ORDERED_NODE_TYPE
 			).singleNodeValue;
+		return b.tabbrowser || b;
 	},
  
 	getTabs : function(aTabBrowser) 
