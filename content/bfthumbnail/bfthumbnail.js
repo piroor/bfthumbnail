@@ -650,6 +650,7 @@ var BFThumbnailService = {
 	
 	handleEvent : function(aEvent) 
 	{
+		var b;
 		switch (aEvent.type)
 		{
 			case 'load':
@@ -661,11 +662,13 @@ var BFThumbnailService = {
 				break;
 
 			case 'TabOpen':
-				this.initTab(aEvent.originalTarget, aEvent.currentTarget);
+				b = this.getTabBrowserFromChild(aEvent.currentTarget);
+				this.initTab(aEvent.originalTarget, b);
 				break;
 
 			case 'TabClose':
-				this.destroyTab(aEvent.originalTarget, aEvent.currentTarget);
+				b = this.getTabBrowserFromChild(aEvent.currentTarget);
+				this.destroyTab(aEvent.originalTarget, b);
 				break;
 
 			case 'mouseover':
