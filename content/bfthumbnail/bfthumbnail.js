@@ -108,7 +108,7 @@ var BFThumbnailService = {
 				aNode,
 				XPathResult.FIRST_ORDERED_NODE_TYPE
 			).singleNodeValue;
-		return b.tabbrowser || b;
+		return (b && b.tabbrowser) || b;
 	},
  
 	getTabs : function(aTabBrowser) 
