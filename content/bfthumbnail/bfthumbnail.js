@@ -128,14 +128,11 @@ var BFThumbnailService = {
 		window.removeEventListener('load', this, false);
 
 
-		if ('BrowserCustomizeToolbar' in window) {
-			eval('window.BrowserCustomizeToolbar = '+
-				window.BrowserCustomizeToolbar.toSource().replace(
-					'{',
-					'{ BFThumbnailService.destroyButtons(); '
-				)
-			);
-		}
+		window.__bfthumbnail__BrowserCustomizeToolbar = window.BrowserCustomizeToolbar;
+		window.BrowserCustomizeToolbar = function() {
+			BFThumbnailService.destroyButtons();
+			window.__bfthumbnail__BrowserCustomizeToolbar.call(window);
+		};
 
 		var toolbox = document.getElementById('browser-toolbox') || // Firefox 3
 					document.getElementById('navigator-toolbox'); // Firefox 2
