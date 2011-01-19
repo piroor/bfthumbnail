@@ -180,6 +180,7 @@ var BFThumbnailService = {
 		delete i;
 		delete maxi;
 		delete tabs;
+		aTabBrowser.addTabsProgressListener(this, Components.interfaces.nsIWebProgress.NOTIFY_ALL);
 	},
  
 	initTab : function(aTab, aTabBrowser) 
@@ -261,6 +262,7 @@ var BFThumbnailService = {
 	
 	destroyTabBrowser : function(aTabBrowser) 
 	{
+		aTabBrowser.removeTabsProgressListener(this);
 		aTabBrowser.mTabContainer.removeEventListener('TabOpen',  this, false);
 		aTabBrowser.mTabContainer.removeEventListener('TabClose', this, false);
 		var tabs = this.getTabs(aTabBrowser);
@@ -736,7 +738,7 @@ var BFThumbnailService = {
 			}
 		}
 	},
-	onLocationChange : function(aWebProgress, aRequest, aLocation) {},
+	onLocationChange : function() {},
 
 /* nsIWebProgressListener2 */
 	onProgressChange64 : function() {},
