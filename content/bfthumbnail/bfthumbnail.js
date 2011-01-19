@@ -180,33 +180,11 @@ var BFThumbnailService = {
 		delete i;
 		delete maxi;
 		delete tabs;
-
-		if ('swapBrowsersAndCloseOther' in aTabBrowser) {
-			eval('aTabBrowser.swapBrowsersAndCloseOther = '+aTabBrowser.swapBrowsersAndCloseOther.toSource().replace(
-				'{',
-				'{ BFThumbnailService.destroyTab(aOurTab);'
-			).replace(
-				'if (aOurTab == this.selectedTab) {this.updateCurrentBrowser(',
-				'BFThumbnailService.initTab(aOurTab); $&'
-			));
-		}
 	},
  
 	initTab : function(aTab, aTabBrowser) 
 	{
-		if (aTab.__thumbnailsaver__progressListener) return;
-
-		if (!aTabBrowser) aTabBrowser = this.getTabBrowserFromChild(aTab);
-		aTab.__thumbnailsaver__parentTabBrowser = aTabBrowser;
-
-		var filter = Components
-				.classes['@mozilla.org/appshell/component/browser-status-filter;1']
-				.createInstance(Components.interfaces.nsIWebProgress);
-		var listener = new BFThumbnailProgressListener(aTab, aTabBrowser);
-		filter.addProgressListener(listener, Components.interfaces.nsIWebProgress.NOTIFY_ALL);
-		aTab.linkedBrowser.webProgress.addProgressListener(filter, Components.interfaces.nsIWebProgress.NOTIFY_ALL);
-		aTab.__thumbnailsaver__progressListener = listener;
-		aTab.__thumbnailsaver__progressFilter   = filter;
+		aTab.linkedBrowser.__thumbnailsaver__tab = aTab;
 	},
  
 	initButtons : function() 
@@ -294,17 +272,7 @@ var BFThumbnailService = {
  
 	destroyTab : function(aTab) 
 	{
-		if (aTab.__thumbnailsaver__progressListener) return;
-
-		aTab.linkedBrowser.webProgress.removeProgressListener(aTab.__thumbnailsaver__progressFilter);
-		aTab.__thumbnailsaver__progressFilter.removeProgressListener(aTab.__thumbnailsaver__progressListener);
-
-		delete aTab.__thumbnailsaver__progressListener.mLabel;
-		delete aTab.__thumbnailsaver__progressListener.mTab;
-		delete aTab.__thumbnailsaver__progressListener.mTabBrowser;
-
-		delete aTab.__thumbnailsaver__progressFilter;
-		delete aTab.__thumbnailsaver__progressListener;
+		delete aTab.linkedBrowser.__thumbnailsaver__tab;
 	},
  
 	destroyButtons : function() 
@@ -370,11 +338,9 @@ var BFThumbnailService = {
     
 /* thumbnail */ 
 	
-	createThumbnail : function(aTab, aTabBrowser, aThis) 
+	createThumbnail : function(aTab) 
 	{
-		if (!aThis) aThis = this;
-
-		var canvas = aThis.canvas;
+		var canvas = this.canvas;
 
 		var b   = aTab.linkedBrowser;
 		var win = b.contentWindow;
@@ -382,8 +348,8 @@ var BFThumbnailService = {
 		var h   = win.innerHeight;
 		var aspectRatio = 1 / 0.75;
 
-		var canvasW = Math.floor((aspectRatio < 1) ? (aThis.size * aspectRatio) : aThis.size );
-		var canvasH = Math.floor((aspectRatio > 1) ? (aThis.size / aspectRatio) : aThis.size );
+		var canvasW = Math.floor((aspectRatio < 1) ? (this.size * aspectRatio) : this.size );
+		var canvasH = Math.floor((aspectRatio > 1) ? (this.size / aspectRatio) : this.size );
 
 		var isImage = b.contentDocument.contentType.indexOf('image') == 0;
 
@@ -403,11 +369,11 @@ var BFThumbnailService = {
 				ctx.scale(canvasH/h, canvasH/h);
 			else
 				ctx.scale(canvasW/w, canvasW/w);
-			ctx.drawWindow(win, 0/*win.scrollX*/, 0/*win.scrollY*/, w, h, aThis.thumbnailBG);
+			ctx.drawWindow(win, 0/*win.scrollX*/, 0/*win.scrollY*/, w, h, this.thumbnailBG);
 		}
 		else {
 			var image = b.contentDocument.getElementsByTagName('img')[0];
-			ctx.fillStyle = aThis.thumbnailBG;
+			ctx.fillStyle = this.thumbnailBG;
 			ctx.fillRect(0, 0, canvasW, canvasH);
 			var iW = parseInt(image.width);
 			var iH = parseInt(image.height);
@@ -427,7 +393,7 @@ var BFThumbnailService = {
 		}
 		ctx.restore();
 
-		aThis.saveThumbnail(win.location.href, canvas.toDataURL());
+		this.saveThumbnail(win.location.href, canvas.toDataURL());
 	},
  
 	fillInTooltip : function() 
@@ -738,60 +704,57 @@ var BFThumbnailService = {
 				}
 				break;
 		}
-	}
-   
-}; 
-BFThumbnailService.__proto__ = window['piro.sakura.ne.jp'].prefs;
-
-window.addEventListener('load', BFThumbnailService, false);
-window.addEventListener('unload', BFThumbnailService, false);
- 
-function BFThumbnailProgressListener(aTab, aTabBrowser) 
-{
-	this.mTab = aTab;
-	this.mTabBrowser = aTabBrowser;
-}
-BFThumbnailProgressListener.prototype = {
-	mTab        : null,
-	mTabBrowser : null,
-	onProgressChange: function(aWebProgress, aRequest, aCurSelfProgress, aMaxSelfProgress, aCurTotalProgress, aMaxTotalProgress)
-	{
 	},
+  
+/* nsIWebProgressListener */ 
+	onProgressChange : function() {},
+	onStatusChange : function() {},
+	onSecurityChange : function() {},
 	onStateChange : function(aWebProgress, aRequest, aStateFlags, aStatus)
 	{
+		// ignore not for tab
+		if (!(aWebProgress instanceof Components.interfaces.nsIDOMElement))
+			return;
+
+		var browser = arguments[0];
+		var tab = browser.__thumbnailsaver__tab;
+		aStateFlags = arguments[3];
+
 		const nsIWebProgressListener = Components.interfaces.nsIWebProgressListener;
 		if (
 			aStateFlags & nsIWebProgressListener.STATE_STOP &&
 			aStateFlags & nsIWebProgressListener.STATE_IS_NETWORK
 			) {
-			BFThumbnailService.createThumbnail(this.mTab, this.mTabBrowser);
-			if (BFThumbnailService.shown &&
-				this.mTabBrowser == gBrowser &&
-				this.mTab.getAttribute('selected') == 'true') {
-				var target = BFThumbnailService.lastTarget;
-				BFThumbnailService.hide(target);
+			this.createThumbnail(tab);
+			if (this.shown &&
+				tab.getAttribute('selected') == 'true') {
+				var target = this.lastTarget;
+				this.hide(target);
 				if (target && target.getAttribute('disabled') != 'true') {
-					BFThumbnailService.show(target);
+					this.show(target);
 				}
 			}
 		}
 	},
-	onLocationChange : function(aWebProgress, aRequest, aLocation)
+	onLocationChange : function(aWebProgress, aRequest, aLocation) {},
+
+/* nsIWebProgressListener2 */
+	onProgressChange64 : function() {},
+	onRefreshAttempted : function() { return true; },
+
+/* nsISupports */
+	QueryInterface : function (aIID)
 	{
-	},
-	onStatusChange : function(aWebProgress, aRequest, aStatus, aMessage)
-	{
-	},
-	onSecurityChange : function(aWebProgress, aRequest, aState)
-	{
-	},
-	QueryInterface : function(aIID)
-	{
-		if (aIID.equals(Components.interfaces.nsIWebProgressListener) ||
-			aIID.equals(Components.interfaces.nsISupportsWeakReference) ||
-			aIID.equals(Components.interfaces.nsISupports))
+		if (aIID.equals(Ci.nsIWebProgressListener) ||
+			aIID.equals(Ci.nsIWebProgressListener2) ||
+			aIID.equals(Ci.nsISupports))
 			return this;
 		throw Components.results.NS_NOINTERFACE;
 	}
-};
+  
+}; 
+BFThumbnailService.__proto__ = window['piro.sakura.ne.jp'].prefs;
+
+window.addEventListener('load', BFThumbnailService, false);
+window.addEventListener('unload', BFThumbnailService, false);
  
