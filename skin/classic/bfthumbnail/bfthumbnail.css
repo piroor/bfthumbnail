@@ -16,6 +16,7 @@
 }
 
 #bfthumbnail-tooltip-thumbnail-container {
+	box-pack: center;
 	-moz-box-pack: center;
 }
 
