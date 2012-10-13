@@ -6,7 +6,7 @@
                    em:id="bfthumbnail@piro.sakura.ne.jp"
                    em:name="Back/Forward Thumbnail"
                    em:version="0.1.2011012001"
-                   em:creator="SHIMODA Hiroshi"
+                   em:creator="YUKI &quot;Piro&quot; Hiroshi"
                    em:description="Provides thumbnail for tooltips on &quot;Back&quot; and &quot;Forward&quot; buttons."
                    em:homepageURL="http://piro.sakura.ne.jp/xul/bfthumbnail/"
                    em:optionsURL="chrome://bfthumbnail/content/config.xul">
@@ -25,7 +25,7 @@
                        em:name="Back/Forward Thumbnail"
                        em:description="Provides thumbnail for tooltips on &quot;Back&quot; and &quot;Forward&quot; buttons."
                        em:homepageURL="http://piro.sakura.ne.jp/xul/_bfthumbnail.html.en"
-                       em:creator="SHIMODA Hiroshi">
+                       em:creator="YUKI &quot;Piro&quot; Hiroshi">
 		<em:contributor>Mikes Kaszmán István (some features and hu-HU locale)</em:contributor>
       </RDF:Description>
     </em:localized>
@@ -34,7 +34,7 @@
                        em:name="戻る/進むサムネイル"
                        em:description="「戻る」「進む」ボタンのツールチップにそのページの縮小画像を表示します。"
                        em:homepageURL="http://piro.sakura.ne.jp/xul/_bfthumbnail.html"
-                       em:creator="SHIMODA Hiroshi">
+                       em:creator="YUKI &quot;Piro&quot; Hiroshi">
 		<em:contributor>Mikes Kaszmán István (some features and hu-HU locale)</em:contributor>
       </RDF:Description>
     </em:localized>
@@ -43,7 +43,7 @@
                        em:name="Back/Forward Thumbnail"
                        em:description="Lap gyorsnézetének megjelenítése buboréksúgóként az &quot;Ugrás az előző/következő oldalra&quot; gomboknál."
                        em:homepageURL="http://piro.sakura.ne.jp/xul/_bfthumbnail.html.en"
-                       em:creator="SHIMODA Hiroshi">
+                       em:creator="YUKI &quot;Piro&quot; Hiroshi">
 		<em:contributor>Mikes Kaszmán István (some features and hu-HU locale)</em:contributor>
       </RDF:Description>
     </em:localized>
