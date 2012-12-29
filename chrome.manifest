@@ -1,9 +1,9 @@
-content	bfthumbnail	jar:chrome/bfthumbnail.jar!/content/bfthumbnail/
+content	bfthumbnail	content/bfthumbnail/
 
-overlay	chrome://browser/content/browser.xul	chrome://bfthumbnail/content/bfthumbnail.xul
+overlay	chrome://browser/content/browser.xul	content/bfthumbnail.xul
 
-locale	bfthumbnail	en-US	jar:chrome/bfthumbnail.jar!/locale/en-US/bfthumbnail/
-locale	bfthumbnail	ja	jar:chrome/bfthumbnail.jar!/locale/ja/bfthumbnail/
-locale	bfthumbnail	hu-HU	jar:chrome/bfthumbnail.jar!/locale/hu-HU/bfthumbnail/
+locale	bfthumbnail	en-US	locale/en-US/bfthumbnail/
+locale	bfthumbnail	ja	locale/ja/bfthumbnail/
+locale	bfthumbnail	hu-HU	locale/hu-HU/bfthumbnail/
 
-skin	bfthumbnail	classic/1.0	jar:chrome/bfthumbnail.jar!/skin/classic/bfthumbnail/
+skin	bfthumbnail	classic/1.0	skin/classic/bfthumbnail/
