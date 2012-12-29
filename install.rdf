@@ -9,7 +9,8 @@
                    em:creator="YUKI &quot;Piro&quot; Hiroshi"
                    em:description="Provides thumbnail for tooltips on &quot;Back&quot; and &quot;Forward&quot; buttons."
                    em:homepageURL="http://piro.sakura.ne.jp/xul/bfthumbnail/"
-                   em:optionsURL="chrome://bfthumbnail/content/config.xul">
+                   em:optionsURL="chrome://bfthumbnail/content/config.xul"
+                   em:type="2">
 <!--
                    em:iconURL=""
 -->
