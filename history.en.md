@@ -1,5 +1,7 @@
 # History
 
+ - master/HEAD
+   * Modified: "jar" archive is no longer included.
  - 0.1.2011012001
    * Works on Minefield 4.0b10pre.
    * Drop support for Firefox 3.0 and older versions.
