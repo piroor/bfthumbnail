@@ -154,7 +154,7 @@ var BFThumbnailService = {
 		this.initTabBrowser(gBrowser);
 		this.initButtons();
 
-		this.addPrefListener(this);
+		this.prefs.addPrefListener(this);
 		this.observe(null, 'nsPref:changed', 'extensions.bfthumbnail.show.title');
 		this.observe(null, 'nsPref:changed', 'extensions.bfthumbnail.show.thumbnail');
 		this.observe(null, 'nsPref:changed', 'extensions.bfthumbnail.show.uri');
@@ -248,7 +248,7 @@ var BFThumbnailService = {
 
 		window.removeEventListener('unload', this, false);
 
-		this.removePrefListener(this);
+		this.prefs.removePrefListener(this);
 
 		for (var i in this._statements)
 		{
@@ -442,7 +442,7 @@ var BFThumbnailService = {
 						entry  = history.getEntryAtIndex(i, false);
 						t_host = entry.URI && /\w+:\/\/([^\/:]+)(\/|$)/.test(entry.URI.spec) ? RegExp.$1 : null ;
 						if ((c_host && !t_host) || (!c_host && t_host) || (c_host != t_host)) {
-							if (this.getPref('rewindforward.goToEndPointOfCurrentDomain')) {
+							if (this.prefs.getPref('rewindforward.goToEndPointOfCurrentDomain')) {
 								if (i == start) {
 									c_host = t_host;
 									continue;
@@ -662,7 +662,7 @@ var BFThumbnailService = {
 		switch (aTopic)
 		{
 			case 'nsPref:changed':
-				var value = this.getPref(aPrefName);
+				var value = this.prefs.getPref(aPrefName);
 				switch (aPrefName)
 				{
 					case 'extensions.bfthumbnail.show.title':
@@ -752,7 +752,7 @@ var BFThumbnailService = {
 	}
   
 }; 
-BFThumbnailService.__proto__ = window['piro.sakura.ne.jp'].prefs;
+BFThumbnailService.prefs = window['piro.sakura.ne.jp'].prefs;
 
 window.addEventListener('load', BFThumbnailService, false);
 window.addEventListener('unload', BFThumbnailService, false);
