@@ -712,7 +712,7 @@ var BFThumbnailService = {
 	onStateChange : function(aWebProgress, aRequest, aStateFlags, aStatus)
 	{
 		// ignore not for tab
-		if (!(aWebProgress instanceof Components.interfaces.nsIDOMElement))
+		if (!(aWebProgress instanceof Element))
 			return;
 
 		var browser = arguments[0];
