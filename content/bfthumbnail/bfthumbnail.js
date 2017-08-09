@@ -115,7 +115,7 @@ var BFThumbnailService = {
 	{
 		return this.evaluateXPath(
 				'descendant::xul:tab',
-				aTabBrowser.mTabContainer
+				aTabBrowser.tabContainer
 			);
 	},
   
@@ -167,8 +167,8 @@ var BFThumbnailService = {
 	
 	initTabBrowser : function(aTabBrowser) 
 	{
-		aTabBrowser.mTabContainer.addEventListener('TabOpen',  this, false);
-		aTabBrowser.mTabContainer.addEventListener('TabClose', this, false);
+		aTabBrowser.tabContainer.addEventListener('TabOpen',  this, false);
+		aTabBrowser.tabContainer.addEventListener('TabClose', this, false);
 		var tabs = this.getTabs(aTabBrowser);
 		for (var i = 0, maxi = tabs.snapshotLength; i < maxi; i++)
 		{
@@ -260,8 +260,8 @@ var BFThumbnailService = {
 	destroyTabBrowser : function(aTabBrowser) 
 	{
 		aTabBrowser.removeTabsProgressListener(this);
-		aTabBrowser.mTabContainer.removeEventListener('TabOpen',  this, false);
-		aTabBrowser.mTabContainer.removeEventListener('TabClose', this, false);
+		aTabBrowser.tabContainer.removeEventListener('TabOpen',  this, false);
+		aTabBrowser.tabContainer.removeEventListener('TabClose', this, false);
 		var tabs = this.getTabs(aTabBrowser);
 		for (var i = 0, maxi = tabs.snapshotLength; i < maxi; i++)
 		{
